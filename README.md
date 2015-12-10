@@ -17,3 +17,7 @@ it in a pluggable and safe way. Requires Rust stable 1.1 or greater.
 - [ ] Http
 - [ ] kafka
 - [ ] kinesis
+
+## Features
+
+- [ ] Monitored by rust metrics
