@@ -1,8 +1,9 @@
 # elephantpump
 
 A rust program which takes a logical decoding stream from postgresql and outputs 
-it in a pluggable and safe way. Requires Rust stable 1.1 or greater.
-
+it in a pluggable and safe way. Requires Rust stable 1.1 or greater. You can bug posix4e(or posix4e_) on
+freenode if you want to get involved. Tasks to work on should be available on:
+[![HuBoard badge](http://img.shields.io/badge/Hu-Board-7965cc.svg)](https://huboard.com/posix4e/elephantpump)
 [![Linux Status](https://travis-ci.org/posix4e/elephantpump.svg?branch=master)](https://travis-ci.org/posix4e/elephantpump)
 
 ## Formats
