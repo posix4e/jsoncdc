@@ -6,3 +6,6 @@ authors = ["Alex Newman <posi@planet.com>"]
 
 [dependencies]
 libc = "*"
+
+[build-dependencies]
+pkg-config = "*"
