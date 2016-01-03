@@ -7,7 +7,7 @@ extern crate libc;
 pub mod libpq;
 
 
-/// Symbols Postgres needs to find.
+// Symbols Postgres needs to find.
 
 #[allow(non_snake_case)]
 #[no_mangle]
@@ -19,7 +19,7 @@ pub unsafe extern fn
     _PG_output_plugin_init(cb: *mut libpq::OutputPluginCallbacks) { init(cb); }
 
 
-/// Implementation of initialization and callbacks.
+// Implementation of initialization and callbacks.
 
 pub unsafe extern fn init(cb: *mut libpq::OutputPluginCallbacks) {
     (*cb).startup_cb = Some(startup);
