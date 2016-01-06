@@ -8,6 +8,13 @@ posix4e(or posix4e_) on freenode if you want to get involved. Tasks to work on
 should be available on:
 [![HuBoard badge](http://img.shields.io/badge/Hu-Board-7965cc.svg)](https://huboard.com/posix4e/elephantpump)
 [![Linux Status](https://travis-ci.org/posix4e/elephantpump.svg?branch=master)](https://travis-ci.org/posix4e/elephantpump)
+
+## To build
+
+You should checkout the .travis.yml for the dependencies on ubuntu to build.
+Make sure to generate the postgresql bindings with the generate_bindings.sh.
+You will also need python
+
 ## Formats
 
 - [ ] Json output
