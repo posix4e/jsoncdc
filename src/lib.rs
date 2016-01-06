@@ -1,4 +1,5 @@
 extern crate libc;
+use std::ffi::CString;
 
 #[allow(dead_code,
         non_snake_case,
@@ -37,7 +38,9 @@ pub type LogicalOutputPluginInit =
 extern fn startup(ctx: *mut libpq::Struct_LogicalDecodingContext,
                   options: *mut libpq::OutputPluginOptions,
                   is_init: libpq::_bool) {
-
+    unsafe {
+        (*options).output_type = libpq::OUTPUT_PLUGIN_TEXTUAL_OUTPUT;
+    }
 }
 /*
 pub type LogicalDecodeStartupCB =
@@ -49,7 +52,13 @@ pub type LogicalDecodeStartupCB =
 
 extern fn begin(ctx: *mut libpq::Struct_LogicalDecodingContext,
                 txn: *mut libpq::ReorderBufferTXN) {
-
+    unsafe {
+        let last = 1;                                     // True in C language
+        let s = CString::new("BEGIN %u").unwrap();
+        libpq::OutputPluginPrepareWrite(ctx, last);
+        libpq::appendStringInfo((*ctx).out, s.as_ptr(), (*txn).xid);
+        libpq::OutputPluginWrite(ctx, last);
+    }
 }
 /*
 pub type LogicalDecodeBeginCB =
@@ -77,7 +86,13 @@ pub type LogicalDecodeChangeCB =
 extern fn commit(ctx: *mut libpq::Struct_LogicalDecodingContext,
                  txn: *mut libpq::ReorderBufferTXN,
                  lsn: libpq::XLogRecPtr) {
-
+    unsafe {
+        let last = 1;                                     // True in C language
+        let s = CString::new("COMMIT %u").unwrap();
+        libpq::OutputPluginPrepareWrite(ctx, last);
+        libpq::appendStringInfo((*ctx).out, s.as_ptr(), (*txn).xid);
+        libpq::OutputPluginWrite(ctx, last);
+    }
 }
 /*
 pub type LogicalDecodeCommitCB =

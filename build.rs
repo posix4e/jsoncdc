@@ -49,7 +49,6 @@ fn main() {
                 .include(config.includedir)
                 .include(config.includedir_server)
                 .compile("libmagic.a");
-    println!("cargo:rustc-link-search={}", config.libdir);
-    println!("cargo:rustc-link-lib=pgcommon");
-    println!("cargo:rustc-link-lib=pgport");
+    // println!("cargo:more-args-somehow={}",
+    //          "-C link-args='-Wl,-undefined,dynamic_lookup'");
 }
