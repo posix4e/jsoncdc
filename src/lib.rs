@@ -38,7 +38,9 @@ pub type LogicalOutputPluginInit =
 extern fn startup(ctx: *mut libpq::Struct_LogicalDecodingContext,
                   options: *mut libpq::OutputPluginOptions,
                   is_init: libpq::_bool) {
-
+    unsafe {
+        (*options).output_type = libpq::OUTPUT_PLUGIN_TEXTUAL_OUTPUT;
+    }
 }
 /*
 pub type LogicalDecodeStartupCB =
