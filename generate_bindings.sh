@@ -1,6 +1,7 @@
 #!/bin/sh 
-set -ex
-which bindgen || cargo install bindgen
+set -x
+which bindgen || cargo install bindgen 
+find . -name bindgen
 
 echo '#include <stdarg.h>' > /tmp/postgres.c
 echo '#include "postgres.h"' >> /tmp/postgres.c
