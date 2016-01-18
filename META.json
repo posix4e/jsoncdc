@@ -1,0 +1,35 @@
+{
+    "name": "jsoncdc",
+    "abstract": "A short description",
+    "description": "A long description",
+    "version": "0.0.1",
+    "maintainer": "Alex Newman",
+    "license": "postgresql",
+    "provides": {
+        "jsoncdc": {
+            "abstract": "A short description",
+            "file": "sql/jsoncdc.sql",
+            "docfile": "doc/jsoncdc.md",
+            "version": "0.0.1"
+        }
+    },
+    "release_status": "unstable",
+    "resources": {
+        "bugtracker": {
+            "web": "https://github.com/solidsnack/jsoncdc/issues",
+        },
+        "repository": {
+          "url":  "https://github.com/solidsnack/jsoncdc.git",
+          "web":  "https://github.com/solidsnack/jsoncdc",
+          "type": "git"
+        }
+    },
+
+    "generated_by": "Jason Dusek",
+
+
+    "meta-spec": {
+        "version": "1.0.0",
+        "url": "http://pgxn.org/meta/spec.txt"
+    }
+}
