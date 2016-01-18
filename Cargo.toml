@@ -1,13 +1,14 @@
 [package]
-name = "elephantpump"
+name = "jsoncdc"
 version = "0.1.0"
-authors = ["Alex Newman <posi@planet.com>"]
+authors = ["Alex Newman <posi@planet.com>",
+           "Jason Dusek <jason.dusek@gmail.com>"]
 build = "build.rs"
 
 
 [lib]
-name = "elephantpump"
-crate-type = ["rlib", "dylib"]
+name = "jsoncdc"
+crate-type = ["dylib"]
 
 
 [dependencies]
