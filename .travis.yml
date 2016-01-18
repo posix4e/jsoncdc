@@ -1,5 +1,5 @@
 language: rust
-before_install: env PATH=$PATH:/home/travis/.cargo/bin ./generate_bindings.sh
+# before_install: env PATH=$PATH:/home/travis/.cargo/bin ./generate_bindings.sh
 addons:
   postgresql: "9.4"
   apt:
