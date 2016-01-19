@@ -1,0 +1,9 @@
+\set ECHO 0
+-- You should write your tests
+SELECT jsoncdc('test');
+ jsoncdc 
+---------
+ 
+(1 row)
+
+ROLLBACK;

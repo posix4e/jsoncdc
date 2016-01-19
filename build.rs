@@ -49,6 +49,5 @@ fn main() {
                 .include(config.includedir)
                 .include(config.includedir_server)
                 .compile("libmagic.a");
-    // println!("cargo:more-args-somehow={}",
-    //          "-C link-args='-Wl,-undefined,dynamic_lookup'");
+    // The GCC module emits `rustc-link-lib=static=magic` for us.
 }
