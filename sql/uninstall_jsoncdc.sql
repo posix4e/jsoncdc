@@ -1,1 +1,1 @@
-DROP FUNCTION jsoncdc(text);
+--- Do nothing.
