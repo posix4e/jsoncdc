@@ -29,7 +29,9 @@ UPDATE test SET h = hstore('i', i::text)||hstore('2i', (2*i)::text);
 DELETE FROM test WHERE i % 2 = 1;
 END;
 
---- Displays only generated JSON, no replication slot metadata.
+--- Displays only generated JSON, no replication slot metadata, and omits
+--- transaction IDs (which would confuse the testing framework because they
+--- vary from run to run).
 SELECT * FROM jsoncdc.changedata
  WHERE NOT (data LIKE '{ "begin": %' OR data LIKE '{ "commit": %');
 
