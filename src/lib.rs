@@ -42,7 +42,7 @@ extern fn begin(ctx: *mut libpq::Struct_LogicalDecodingContext,
                 txn: *mut libpq::ReorderBufferTXN) {
     unsafe {
         let is_last = 1;                                  // True in C language
-        let s = CString::new("{ \"BEGIN\": %u }").unwrap();
+        let s = CString::new("{ \"begin\": %u }").unwrap();
         libpq::OutputPluginPrepareWrite(ctx, is_last);
         libpq::appendStringInfo((*ctx).out, s.as_ptr(), (*txn).xid);
         libpq::OutputPluginWrite(ctx, is_last);
@@ -81,7 +81,7 @@ extern fn commit(ctx: *mut libpq::Struct_LogicalDecodingContext,
                  lsn: libpq::XLogRecPtr) {
     unsafe {
         let last = 1;                                     // True in C language
-        let s = CString::new("{ \"COMMIT\": %u }").unwrap();
+        let s = CString::new("{ \"commit\": %u }").unwrap();
         libpq::OutputPluginPrepareWrite(ctx, last);
         libpq::appendStringInfo((*ctx).out, s.as_ptr(), (*txn).xid);
         libpq::OutputPluginWrite(ctx, last);
@@ -115,9 +115,9 @@ unsafe fn append_change(relation: libpq::Relation,
     let tuple_new = (*tuples).newtuple;
     let tuple_old = (*tuples).oldtuple;
     let token = match (*change).action {
-        libpq::REORDER_BUFFER_CHANGE_INSERT => "INSERT",
-        libpq::REORDER_BUFFER_CHANGE_UPDATE => "UPDATE",
-        libpq::REORDER_BUFFER_CHANGE_DELETE => "DELETE",
+        libpq::REORDER_BUFFER_CHANGE_INSERT => "insert",
+        libpq::REORDER_BUFFER_CHANGE_UPDATE => "update",
+        libpq::REORDER_BUFFER_CHANGE_DELETE => "delete",
         _ => panic!("Unrecognized change action!")
     };
     append("{ ", out);
@@ -126,11 +126,10 @@ unsafe fn append_change(relation: libpq::Relation,
     append("\": ", out);
     append_tuple_buf_as_json(tuple_new, tuple_desc, out);
     if !tuple_old.is_null() {
-        append(", ", out);
-        append(" \"@\": ", out);
+        append(", \"@\": ", out);
         append_tuple_buf_as_json(tuple_old, tuple_desc, out);
     }
-    append(" }\n", out);
+    append(" }", out);
 }
 
 unsafe fn append_tuple_buf_as_json(data: *mut libpq::ReorderBufferTupleBuf,
