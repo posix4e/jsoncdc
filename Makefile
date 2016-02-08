@@ -28,6 +28,7 @@ ifeq ($(shell uname -s),Darwin)
 LINK_FLAGS   = -C link-args='-Wl,-undefined,dynamic_lookup'
 endif
 
+.PHONY: jsoncdc.so
 jsoncdc.so:
 	cargo rustc --release -- $(LINK_FLAGS)
 	cp target/release/libjsoncdc.* $@
