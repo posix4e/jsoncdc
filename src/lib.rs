@@ -17,12 +17,8 @@ pub unsafe extern fn init(cb: *mut libpq::OutputPluginCallbacks) {
     (*cb).commit_cb = Some(commit);
     (*cb).shutdown_cb = Some(shutdown);
 }
-/*
-pub type LogicalOutputPluginInit =
-    ::std::option::Option<extern "C" fn(cb: *mut Struct_OutputPluginCallbacks)
-                              -> ()>;
-*/
 
+#[allow(unused_variables)]
 extern fn startup(ctx: *mut libpq::Struct_LogicalDecodingContext,
                   options: *mut libpq::OutputPluginOptions,
                   is_init: libpq::_bool) {
@@ -30,14 +26,8 @@ extern fn startup(ctx: *mut libpq::Struct_LogicalDecodingContext,
         (*options).output_type = libpq::OUTPUT_PLUGIN_TEXTUAL_OUTPUT;
     }
 }
-/*
-pub type LogicalDecodeStartupCB =
-    ::std::option::Option<extern "C" fn(ctx:
-                                            *mut Struct_LogicalDecodingContext,
-                                        options: *mut OutputPluginOptions,
-                                        is_init: _bool) -> ()>;
- */
 
+#[allow(unused_variables)]
 extern fn begin(ctx: *mut libpq::Struct_LogicalDecodingContext,
                 txn: *mut libpq::ReorderBufferTXN) {
     unsafe {
@@ -48,13 +38,8 @@ extern fn begin(ctx: *mut libpq::Struct_LogicalDecodingContext,
         libpq::OutputPluginWrite(ctx, is_last);
     }
 }
-/*
-pub type LogicalDecodeBeginCB =
-    ::std::option::Option<extern "C" fn(arg1:
-                                            *mut Struct_LogicalDecodingContext,
-                                        txn: *mut ReorderBufferTXN) -> ()>;
- */
 
+#[allow(unused_variables)]
 extern fn change(ctx: *mut libpq::Struct_LogicalDecodingContext,
                  txn: *mut libpq::ReorderBufferTXN,
                  relation: libpq::Relation,
@@ -66,16 +51,8 @@ extern fn change(ctx: *mut libpq::Struct_LogicalDecodingContext,
         libpq::OutputPluginWrite(ctx, last);
     }
 }
-/*
-pub type LogicalDecodeChangeCB =
-    ::std::option::Option<extern "C" fn(arg1:
-                                            *mut Struct_LogicalDecodingContext,
-                                        txn: *mut ReorderBufferTXN,
-                                        relation: Relation,
-                                        change: *mut ReorderBufferChange)
-                              -> ()>;
- */
 
+#[allow(unused_variables)]
 extern fn commit(ctx: *mut libpq::Struct_LogicalDecodingContext,
                  txn: *mut libpq::ReorderBufferTXN,
                  lsn: libpq::XLogRecPtr) {
@@ -87,24 +64,11 @@ extern fn commit(ctx: *mut libpq::Struct_LogicalDecodingContext,
         libpq::OutputPluginWrite(ctx, last);
     }
 }
-/*
-pub type LogicalDecodeCommitCB =
-    ::std::option::Option<extern "C" fn(arg1:
-                                            *mut Struct_LogicalDecodingContext,
-                                        txn: *mut ReorderBufferTXN,
-                                        commit_lsn: XLogRecPtr) -> ()>;
- */
 
+#[allow(unused_variables)]
 extern fn shutdown(ctx: *mut libpq::Struct_LogicalDecodingContext) {
   // Do nothing.
 }
-/*
-pub type LogicalDecodeShutdownCB =
-    ::std::option::Option<extern "C" fn(arg1:
-                                            *mut Struct_LogicalDecodingContext)
-                              -> ()>;
-
- */
 
 
 unsafe fn append_change(relation: libpq::Relation,
