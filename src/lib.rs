@@ -106,8 +106,8 @@ unsafe fn append_tuple_buf_as_json(data: *mut libpq::ReorderBufferTupleBuf,
         let json = libpq::DirectFunctionCall1Coll(Some(row_to_json),
                                                   empty_oid,
                                                   datum);
-        let json_output_function: libpq::Oid = 322;     // TODO: Dynamic lookup
-        let text = libpq::OidOutputFunctionCall(json_output_function, json);
+        let ptr = json as *const libpq::Struct_varlena;
+        let text = libpq::text_to_cstring(ptr);
         libpq::appendStringInfoString(out, text);
     } else {
         append("{}", out);
