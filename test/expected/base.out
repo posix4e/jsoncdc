@@ -1,9 +1,26 @@
-\set ECHO 0
--- You should write your tests
-SELECT jsoncdc('test');
- jsoncdc 
----------
- 
-(1 row)
+\set ECHO none
+ created logical replication slot
 
-ROLLBACK;
+ { "insert": {"i":1,"h":{}} }
+ { "insert": {"i":2,"h":{}} }
+ { "insert": {"i":3,"h":{}} }
+ { "insert": {"i":4,"h":{}} }
+ { "insert": {"i":5,"h":{}} }
+ { "insert": {"i":6,"h":{}} }
+ { "insert": {"i":7,"h":{}} }
+ { "insert": {"i":8,"h":{}} }
+ { "update": {"i":1,"h":{"i": "1", "2i": "2"}} }
+ { "update": {"i":2,"h":{"i": "2", "2i": "4"}} }
+ { "update": {"i":3,"h":{"i": "3", "2i": "6"}} }
+ { "update": {"i":4,"h":{"i": "4", "2i": "8"}} }
+ { "update": {"i":5,"h":{"i": "5", "2i": "10"}} }
+ { "update": {"i":6,"h":{"i": "6", "2i": "12"}} }
+ { "update": {"i":7,"h":{"i": "7", "2i": "14"}} }
+ { "update": {"i":8,"h":{"i": "8", "2i": "16"}} }
+ { "delete": {}, "@": {"i":1,"h":null} }
+ { "delete": {}, "@": {"i":3,"h":null} }
+ { "delete": {}, "@": {"i":5,"h":null} }
+ { "delete": {}, "@": {"i":7,"h":null} }
+
+ deleted logical replication slot
+

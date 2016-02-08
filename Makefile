@@ -42,3 +42,7 @@ include $(PGXS)
 clean: cargoclean
 
 all: jsoncdc.so
+
+.PHONY: test
+test:
+	pgxn check ./
