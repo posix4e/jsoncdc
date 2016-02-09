@@ -58,9 +58,10 @@ extern fn commit(ctx: *mut libpq::Struct_LogicalDecodingContext,
                  lsn: libpq::XLogRecPtr) {
     unsafe {
         let last = 1;                                     // True in C language
-        let s = CString::new("{ \"commit\": %u }").unwrap();
+        let s = CString::new("{ \"commit\": %u, \"t\": \"%s\" }").unwrap();
+        let t = libpq::timestamptz_to_str((*txn).commit_time);
         libpq::OutputPluginPrepareWrite(ctx, last);
-        libpq::appendStringInfo((*ctx).out, s.as_ptr(), (*txn).xid);
+        libpq::appendStringInfo((*ctx).out, s.as_ptr(), (*txn).xid, t);
         libpq::OutputPluginWrite(ctx, last);
     }
 }
