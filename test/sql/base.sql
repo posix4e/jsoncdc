@@ -25,6 +25,7 @@ END;
 
 BEGIN;
 SET LOCAL search_path TO jsoncdc, public;
+UPDATE test SET i = i * 10 WHERE i % 3 = 0;
 UPDATE test SET h = hstore('i', i::text)||hstore('2i', (2*i)::text);
 DELETE FROM test WHERE i % 2 = 1;
 END;
