@@ -1,6 +1,7 @@
 \set ECHO none
  created logical replication slot
 
+ { "table": "jsoncdc.test", "schema": [{"i":"integer"},{"h":"jsoncdc.hstore"}] }
  { "insert": {"i":1,"h":{}} }
  { "insert": {"i":2,"h":{}} }
  { "insert": {"i":3,"h":{}} }

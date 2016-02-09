@@ -1,5 +1,6 @@
 extern crate libc;
 use std::ffi::CString;
+use std::mem::size_of;
 
 #[allow(dead_code,
         non_snake_case,
@@ -26,6 +27,8 @@ extern fn startup(ctx: *mut libpq::Struct_LogicalDecodingContext,
                   options: *mut libpq::OutputPluginOptions,
                   is_init: libpq::_bool) {
     unsafe {
+        let last_relid = libpq::palloc0(size_of::<libpq::Oid>() as u64);
+        (*ctx).output_plugin_private = last_relid;
         (*options).output_type = libpq::OUTPUT_PLUGIN_TEXTUAL_OUTPUT;
     }
 }
@@ -47,9 +50,15 @@ extern fn change(ctx: *mut libpq::Struct_LogicalDecodingContext,
                  relation: libpq::Relation,
                  change: *mut libpq::ReorderBufferChange) {
     unsafe {
-        libpq::OutputPluginPrepareWrite(ctx, CFALSE);
-        append_schema(relation, (*ctx).out);
-        libpq::OutputPluginWrite(ctx, CFALSE);
+        let relid = (*relation).rd_id;
+        let last_relid: *mut libpq::Oid =
+            (*ctx).output_plugin_private as *mut libpq::Oid;
+        if *last_relid != relid {
+            libpq::OutputPluginPrepareWrite(ctx, CFALSE);
+            append_schema(relation, (*ctx).out);
+            libpq::OutputPluginWrite(ctx, CFALSE);
+            *last_relid = relid;
+        }
         libpq::OutputPluginPrepareWrite(ctx, CTRUE);
         append_change(relation, change, (*ctx).out);
         libpq::OutputPluginWrite(ctx, CTRUE);
@@ -71,7 +80,9 @@ extern fn commit(ctx: *mut libpq::Struct_LogicalDecodingContext,
 
 #[allow(unused_variables)]
 extern fn shutdown(ctx: *mut libpq::Struct_LogicalDecodingContext) {
-  // Do nothing.
+    unsafe {
+        libpq::pfree((*ctx).output_plugin_private);
+    }
 }
 
 
@@ -132,7 +143,7 @@ unsafe fn append_schema(relation: libpq::Relation, out: libpq::StringInfo) {
     append("\"", out);
     libpq::appendStringInfoString(out, qualified_name);
     append("\"", out);
-    append(", ", out);
+    append(",", out);
     append(" \"schema\": ", out);
     append("[", out);
     let fmt = CString::new("{\"%s\":\"%s\"}").unwrap();
