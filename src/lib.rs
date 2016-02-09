@@ -8,6 +8,9 @@ use std::ffi::CString;
 pub mod libpq;
 
 
+const CTRUE: libpq::_bool = 1;
+const CFALSE: libpq::_bool = 0;
+
 // Implementation of initialization and callbacks.
 
 pub unsafe extern fn init(cb: *mut libpq::OutputPluginCallbacks) {
@@ -31,11 +34,10 @@ extern fn startup(ctx: *mut libpq::Struct_LogicalDecodingContext,
 extern fn begin(ctx: *mut libpq::Struct_LogicalDecodingContext,
                 txn: *mut libpq::ReorderBufferTXN) {
     unsafe {
-        let is_last = 1;                                  // True in C language
         let s = CString::new("{ \"begin\": %u }").unwrap();
-        libpq::OutputPluginPrepareWrite(ctx, is_last);
+        libpq::OutputPluginPrepareWrite(ctx, CTRUE);
         libpq::appendStringInfo((*ctx).out, s.as_ptr(), (*txn).xid);
-        libpq::OutputPluginWrite(ctx, is_last);
+        libpq::OutputPluginWrite(ctx, CTRUE);
     }
 }
 
@@ -45,14 +47,12 @@ extern fn change(ctx: *mut libpq::Struct_LogicalDecodingContext,
                  relation: libpq::Relation,
                  change: *mut libpq::ReorderBufferChange) {
     unsafe {
-        let last = 1;                                     // True in C language
-
-        libpq::OutputPluginPrepareWrite(ctx, 0);
+        libpq::OutputPluginPrepareWrite(ctx, CFALSE);
         append_schema(relation, (*ctx).out);
-        libpq::OutputPluginWrite(ctx, 0);
-        libpq::OutputPluginPrepareWrite(ctx, last);
+        libpq::OutputPluginWrite(ctx, CFALSE);
+        libpq::OutputPluginPrepareWrite(ctx, CTRUE);
         append_change(relation, change, (*ctx).out);
-        libpq::OutputPluginWrite(ctx, last);
+        libpq::OutputPluginWrite(ctx, CTRUE);
     }
 }
 
@@ -61,12 +61,11 @@ extern fn commit(ctx: *mut libpq::Struct_LogicalDecodingContext,
                  txn: *mut libpq::ReorderBufferTXN,
                  lsn: libpq::XLogRecPtr) {
     unsafe {
-        let last = 1;                                     // True in C language
         let s = CString::new("{ \"commit\": %u, \"t\": \"%s\" }").unwrap();
         let t = libpq::timestamptz_to_str((*txn).commit_time);
-        libpq::OutputPluginPrepareWrite(ctx, last);
+        libpq::OutputPluginPrepareWrite(ctx, CTRUE);
         libpq::appendStringInfo((*ctx).out, s.as_ptr(), (*txn).xid, t);
-        libpq::OutputPluginWrite(ctx, last);
+        libpq::OutputPluginWrite(ctx, CTRUE);
     }
 }
 
