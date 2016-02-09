@@ -124,7 +124,6 @@ unsafe fn append<T: Into<Vec<u8>>>(t: T, out: libpq::StringInfo) {
 
 unsafe fn append_schema(relation: libpq::Relation, out: libpq::StringInfo) {
     let relid = (*relation).rd_id;
-    let form = (*relation).rd_rel;
     let tupdesc = (*relation).rd_att;
     let name = libpq::get_rel_name(relid);
     let ns = libpq::get_namespace_name(libpq::get_rel_namespace(relid));
