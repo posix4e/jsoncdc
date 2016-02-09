@@ -75,6 +75,9 @@ extern fn commit(ctx: *mut libpq::Struct_LogicalDecodingContext,
         libpq::OutputPluginPrepareWrite(ctx, CTRUE);
         libpq::appendStringInfo((*ctx).out, s.as_ptr(), (*txn).xid, t);
         libpq::OutputPluginWrite(ctx, CTRUE);
+        let last_relid: *mut libpq::Oid =
+            (*ctx).output_plugin_private as *mut libpq::Oid;
+        *last_relid = 0;
     }
 }
 

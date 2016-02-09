@@ -1,0 +1,32 @@
+\set ECHO none
+ created logical replication slot
+
+ { "table": "jsoncdc.tab1", "schema": [{"i":"integer"},{"h":"jsoncdc.hstore"}] }
+ { "insert": {"i":1,"h":{}} }
+ { "table": "jsoncdc.tab2", "schema": [{"i":"integer"},{"j":"integer"}] }
+ { "insert": {"i":1,"j":0} }
+ { "table": "jsoncdc.tab1", "schema": [{"i":"integer"},{"h":"jsoncdc.hstore"}] }
+ { "insert": {"i":2,"h":{}} }
+ { "table": "jsoncdc.tab2", "schema": [{"i":"integer"},{"j":"integer"}] }
+ { "insert": {"i":2,"j":0} }
+ { "table": "jsoncdc.tab1", "schema": [{"i":"integer"},{"h":"jsoncdc.hstore"}] }
+ { "insert": {"i":3,"h":{}} }
+ { "table": "jsoncdc.tab2", "schema": [{"i":"integer"},{"j":"integer"}] }
+ { "insert": {"i":3,"j":0} }
+ { "table": "jsoncdc.tab1", "schema": [{"i":"integer"},{"h":"jsoncdc.hstore"}] }
+ { "insert": {"i":4,"h":{}} }
+ { "table": "jsoncdc.tab2", "schema": [{"i":"integer"},{"j":"integer"}] }
+ { "insert": {"i":4,"j":0} }
+ { "table": "jsoncdc.tab1", "schema": [{"i":"integer"},{"h":"jsoncdc.hstore"}] }
+ { "update": {"i":1,"h":{"i": "1", "2i": "2"}} }
+ { "update": {"i":2,"h":{"i": "2", "2i": "4"}} }
+ { "update": {"i":3,"h":{"i": "3", "2i": "6"}} }
+ { "update": {"i":4,"h":{"i": "4", "2i": "8"}} }
+ { "delete": {}, "@": {"i":1,"h":null} }
+ { "delete": {}, "@": {"i":3,"h":null} }
+ { "table": "jsoncdc.tab2", "schema": [{"i":"integer"},{"j":"integer"}] }
+ { "delete": {}, "@": {"i":1,"j":null} }
+ { "delete": {}, "@": {"i":3,"j":null} }
+
+ deleted logical replication slot
+
