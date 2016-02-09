@@ -46,6 +46,10 @@ extern fn change(ctx: *mut libpq::Struct_LogicalDecodingContext,
                  change: *mut libpq::ReorderBufferChange) {
     unsafe {
         let last = 1;                                     // True in C language
+
+        libpq::OutputPluginPrepareWrite(ctx, 0);
+        append_schema(relation, (*ctx).out);
+        libpq::OutputPluginWrite(ctx, 0);
         libpq::OutputPluginPrepareWrite(ctx, last);
         append_change(relation, change, (*ctx).out);
         libpq::OutputPluginWrite(ctx, last);
@@ -117,6 +121,41 @@ unsafe fn append_tuple_buf_as_json(data: *mut libpq::ReorderBufferTupleBuf,
 
 unsafe fn append<T: Into<Vec<u8>>>(t: T, out: libpq::StringInfo) {
     libpq::appendStringInfoString(out, CString::new(t).unwrap().as_ptr());
+}
+
+unsafe fn append_schema(relation: libpq::Relation, out: libpq::StringInfo) {
+    let relid = (*relation).rd_id;
+    let form = (*relation).rd_rel;
+    let tupdesc = (*relation).rd_att;
+    let name = libpq::get_rel_name(relid);
+    let ns = libpq::get_namespace_name(libpq::get_rel_namespace(relid));
+    let qualified_name = libpq::quote_qualified_identifier(ns, name);
+    append("{ \"table\": ", out);
+    append("\"", out);
+    libpq::appendStringInfoString(out, qualified_name);
+    append("\"", out);
+    append(", ", out);
+    append(" \"schema\": ", out);
+    append("[", out);
+    let fmt = CString::new("{\"%s\":\"%s\"}").unwrap();
+    let mut first: bool = true;
+    for i in 0..(*tupdesc).natts {
+        let attr = *(*tupdesc).attrs.offset(i as isize);
+        let num = (*attr).attnum;
+        if (*attr).attisdropped == 1 || num <= 0 {
+            continue;
+        }
+        let col = libpq::get_attname(relid, num);
+        let typ = libpq::format_type_be(libpq::get_atttype(relid, num));
+        if !first {
+            append(",", out);
+        } else {
+            first = false;
+        }
+        libpq::appendStringInfo(out, fmt.as_ptr(), col, typ);
+    }
+    append("]", out);
+    append(" }", out);
 }
 
 extern fn row_to_json(fcinfo: libpq::FunctionCallInfo) -> libpq::Datum {
