@@ -5,8 +5,8 @@ addons:
   postgresql: "9.4"
   apt:
     packages:
+    - python-pip
     - libpq-dev
-    - pgxnclient
     - postgresql-server-dev-all
     - libclang1-3.4
     - libclang-3.4-dev
