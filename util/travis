@@ -1,5 +1,5 @@
 #!/bin/bash
 set -o errexit -o nounset -o pipefail
 
-make install
+sudo make install
 make test
