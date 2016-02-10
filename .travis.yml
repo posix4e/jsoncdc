@@ -1,6 +1,9 @@
 language: rust
 sudo: required
-# before_install: env PATH=$PATH:/home/travis/.cargo/bin ./generate_bindings.sh
+os:
+  - linux
+rust:
+  - beta
 addons:
   postgresql: "9.4"
   apt:

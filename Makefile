@@ -30,12 +30,12 @@ endif
 
 .PHONY: jsoncdc.so
 jsoncdc.so:
+	@echo $(PATH) 
 	cargo rustc --release -- $(LINK_FLAGS)
 	cp target/release/libjsoncdc.* $@
 
 cargoclean:
 	cargo clean
-
 
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
