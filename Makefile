@@ -30,7 +30,6 @@ endif
 
 .PHONY: jsoncdc.so
 jsoncdc.so:
-	@echo $(PATH) 
 	cargo rustc --release -- $(LINK_FLAGS)
 	cp target/release/libjsoncdc.* $@
 
