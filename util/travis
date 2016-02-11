@@ -1,9 +1,8 @@
 #!/bin/bash
 set -o errexit -o nounset -o pipefail
 
-export PATH_BACKUP=$PATH
 sudo pip install pgxnclient
-sudo -E env PATH=$PATH_BACKUP make install
+sudo -E env PATH="$PATH" make install
 VERSION=9.4
 PG_DIR=/etc/postgresql/${VERSION}/main
 HBA_CONF=$PG_DIR/pg_hba.conf
