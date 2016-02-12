@@ -2,8 +2,11 @@
     "name": "jsoncdc",
     "abstract": "A short description",
     "description": "A long description",
-    "version": "0.0.0",
-    "maintainer": "Alex Newman",
+    "version": "0.0.1",
+    "maintainer": [
+        "Alex Newman <posi@planet.com>",
+        "Jason Dusek <jason.dusek@gmail.com>"
+    ],
     "license": "postgresql",
     "provides": {
         "jsoncdc": {
