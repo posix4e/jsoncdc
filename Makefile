@@ -28,16 +28,39 @@ ifeq ($(shell uname -s),Darwin)
 LINK_FLAGS   = -C link-args='-Wl,-undefined,dynamic_lookup'
 endif
 
+
+HAZRUST := $(shell which cargo >/dev/null && echo yes || echo no)
+
+ifeq ($(HAZRUST),yes)
 .PHONY: jsoncdc.so
 jsoncdc.so:
 	cargo rustc --release -- $(LINK_FLAGS)
 	cp target/release/libjsoncdc.* $@
 
+.PHONY: cargoclean
 cargoclean:
 	cargo clean
+else
+define CAN_HAZ_RUST
+
+We need a Rust toolchain (rustc and cargo) to compile this extension.
+
+See: https://www.rust-lang.org/downloads.html
+
+
+endef
+# NB: Not phony so if they build the extension somehow, it can work.
+jsoncdc.so:
+	$(error $(CAN_HAZ_RUST))
+
+.PHONY: cargoclean
+cargoclean:
+	$(warning No Rust toolchain so not cleaning anything.)
+endif
 
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
+
 
 clean: cargoclean
 
