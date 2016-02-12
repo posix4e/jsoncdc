@@ -1,5 +1,5 @@
 # jsoncdc extension
 comment = 'JSON Logical Decoding'
-default_version = '0.0.3'
+default_version = '0.0.4'
 module_pathname = '$libdir/jsoncdc'
 relocatable = true
