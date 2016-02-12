@@ -1,33 +1,61 @@
-# jsoncdc
+JSONCDC
+=======
 
-A rust program which takes a logical decoding stream from postgresql and 
-outputs it in a pluggable and safe way. Not to be confused with
-[The best rust postgresql library](https://github.com/sfackler/rust-postgres).
-Our library Requires rust stable 1.1 or greater.  You can bug 
-posix4e(or posix4e_) on freenode if you want to get involved. Tasks to work on 
-should be available on:
-[![HuBoard badge](http://img.shields.io/badge/Hu-Board-7965cc.svg)](https://huboard.com/posix4e/jsoncdc)
-[![Linux Status](https://travis-ci.org/posix4e/jsoncdc.svg?branch=master)](https://travis-ci.org/posix4e/jsoncdc)
+JSONCDC provides change data control for Postgres, translating the Postgres
+write ahead log to JSON.
 
-## To build
+It is written in Rust and, being short, is a good skeleton project for other
+would be plugin authors who'd like to use Rust instead of C when writing
+Postgres extensions.
 
-You should checkout the .travis.yml for the dependencies on ubuntu to build.
-Make sure to generate the postgresql bindings with the generate_bindings.sh.
-You will also need python
+Our library Requires rust stable 1.1 or greater.  You can bug `posix4e` (or
+`posix4e_`) on Freenode if you want to get involved.
 
-## Formats
+Tasks to work on should be available on:
+[![HuBoard
+badge](http://img.shields.io/badge/Hu-Board-7965cc.svg)](https://huboard.com/posix4e/jsoncdc)
 
-- [ ] Json output
+[![Linux
+Status](https://travis-ci.org/posix4e/jsoncdc.svg?branch=master)](https://travis-ci.org/posix4e/jsoncdc)
+
+
+Copyright and License
+---------------------
+
+Copyright (c) 2016 Alex Newman, Jason Dusek
+
+
+Status
+------
+
+JSONCDC is presently installable with `pgxn`, from the unstable channel:
+`pgxn install jsoncdc --unstable`.
+
+
+Usage
+-----
+
+    SELECT * FROM pg_create_logical_replication_slot('jsoncdc', 'jsoncdc');
+    --- Wait for some transactions, and then:
+    SELECT * FROM pg_logical_slot_get_changes('jsoncdc', NULL, NULL);
+
+
+Formats
+-------
+
+- [x] JSON output
 - [ ] Protobufs output
 - [ ] Avro output
 
-## Destinations
+Destinations
+------------
 
 - [ ] File
-- [ ] Http
-- [ ] kafka
-- [ ] kinesis
+- [ ] HTTP
+- [ ] Kafka
+- [ ] Kinesis
 
-## Features
+Features
+--------
 
-- [ ] Monitored by rust metrics
+- [ ] Monitored by Rust metrics
