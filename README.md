@@ -1,6 +1,8 @@
 JSONCDC
 =======
 
+[![Join the chat at https://gitter.im/posix4e/jsoncdc](https://badges.gitter.im/posix4e/jsoncdc.svg)](https://gitter.im/posix4e/jsoncdc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 JSONCDC provides change data control for Postgres, translating the Postgres
 write ahead log to JSON.
 
