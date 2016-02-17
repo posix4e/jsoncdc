@@ -37,9 +37,37 @@ JSONCDC is presently installable with `pgxn`, from the unstable channel:
 Usage
 -----
 
+A basic demo:
+
     SELECT * FROM pg_create_logical_replication_slot('jsoncdc', 'jsoncdc');
     --- Wait for some transactions, and then:
     SELECT * FROM pg_logical_slot_get_changes('jsoncdc', NULL, NULL);
+
+The output format of `jsoncdc` is very regular, consisting of `begin`,
+`table`, `insert`, `update` and `delete` clauses as JSON objects, one per line:
+
+    { "begin": <xid> }
+    { "table": <name of table>, "schema": <column names and type> }
+    ...inserts, updates and deletes for this table...
+    { "table": <name of next table>, "schema": <column names and type> }
+    ...inserts, updates and deletes for next table...
+    { "commit": <xid>, "t": <timestamp with timezone> }
+
+With `pg_recvlogical` and a little shell, you can leverage this very regular
+formatting to get each transaction batched into a separate file:
+
+    pg_recvlogical -S jsoncdc -d postgres:/// --start -f - |
+    while read -r line
+    do
+      case "$line" in
+        '{ "begin": '*)                # Close and reopen FD 9 for each new XID
+          fields=( $line )
+          xid="${fields[2]}"
+          exec 9>&-
+          exec 9> "txn-${xid}.json" ;;
+      esac
+      printf '%s\n' "$line" >&9       # Use printf because echo is non-portable
+    done
 
 
 Formats
