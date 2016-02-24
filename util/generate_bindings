@@ -36,7 +36,6 @@ cat > tmp/pgheaders.h <<\EOF
 #include "utils/lsyscache.h"
 #include "replication/output_plugin.h"
 #include "replication/logical.h"
-#include "replication/logical.h"
 EOF
 
 gcc -I "`pg_config --includedir-server`" -E tmp/pgheaders.h > tmp/pgexpanded.h
