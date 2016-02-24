@@ -23,13 +23,13 @@ endif
 
 # Note that `MODULES = jsoncdc` implies a dependency on `jsoncdc.so`.
 MODULES      = jsoncdc
-PGXX := $(shell util/generate_bindings --select-pg)
+PGXX        := $(shell util/generate_bindings --select-pg)
+HAZRUST     := $(shell which cargo >/dev/null && echo yes || echo no)
 
 ifeq ($(shell uname -s),Darwin)
 LINK_FLAGS   = -C link-args='-Wl,-undefined,dynamic_lookup'
 endif
 
-HAZRUST := $(shell which cargo >/dev/null && echo yes || echo no)
 
 ifeq ($(HAZRUST),yes)
 .PHONY: jsoncdc.so
