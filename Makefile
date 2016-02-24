@@ -23,18 +23,18 @@ endif
 
 # Note that `MODULES = jsoncdc` implies a dependency on `jsoncdc.so`.
 MODULES      = jsoncdc
+PGXX := $(shell util/generate_bindings --select-pg)
 
 ifeq ($(shell uname -s),Darwin)
 LINK_FLAGS   = -C link-args='-Wl,-undefined,dynamic_lookup'
 endif
-
 
 HAZRUST := $(shell which cargo >/dev/null && echo yes || echo no)
 
 ifeq ($(HAZRUST),yes)
 .PHONY: jsoncdc.so
 jsoncdc.so:
-	cargo rustc --release -- $(LINK_FLAGS)
+	cargo rustc --release -- --cfg $(PGXX) $(LINK_FLAGS)
 	cp target/release/libjsoncdc.* $@
 
 .PHONY: cargoclean
@@ -49,7 +49,8 @@ See: https://www.rust-lang.org/downloads.html
 
 
 endef
-# NB: Not phony so if they build the extension somehow, it can work.
+# NB: Not phony so if they build the extension somehow, the rest of the
+#     install can be completed.
 jsoncdc.so:
 	$(error $(CAN_HAZ_RUST))
 

@@ -2,15 +2,18 @@ extern crate libc;
 use std::ffi::CString;
 use std::mem::size_of;
 
-#[allow(dead_code,
-        non_snake_case,
-        non_camel_case_types,
-        non_upper_case_globals)]
-pub mod pg;
+#[cfg(pg94)]
+#[allow(non_snake_case, non_camel_case_types, non_upper_case_globals)]
+pub mod pg94;
+#[cfg(pg94)]
+pub use pg94 as pg;
 
+#[cfg(pg95)]
+#[allow(non_snake_case, non_camel_case_types, non_upper_case_globals)]
+pub mod pg95;
+#[cfg(pg95)]
+pub use pg95 as pg;
 
-const CTRUE: pg::_bool = 1;
-const CFALSE: pg::_bool = 0;
 
 // Implementation of initialization and callbacks.
 
@@ -177,3 +180,9 @@ pub unsafe extern fn _PG_init() { }
 #[no_mangle]
 pub unsafe extern fn
     _PG_output_plugin_init(cb: *mut pg::OutputPluginCallbacks) { init(cb); }
+
+
+// Miscellaneous.
+
+const CTRUE: pg::_bool = 1;
+const CFALSE: pg::_bool = 0;
