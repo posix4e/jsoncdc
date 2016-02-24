@@ -22,84 +22,71 @@ pub unsafe extern fn init(cb: *mut pg::OutputPluginCallbacks) {
     (*cb).shutdown_cb = Some(shutdown);
 }
 
-#[allow(unused_variables)]
-extern fn startup(ctx: *mut pg::Struct_LogicalDecodingContext,
-                  options: *mut pg::OutputPluginOptions,
-                  is_init: pg::_bool) {
-    unsafe {
-        let last_relid = pg::palloc0(size_of::<pg::Oid>() as u64);
-        (*ctx).output_plugin_private = last_relid;
-        (*options).output_type = pg::OUTPUT_PLUGIN_TEXTUAL_OUTPUT;
-    }
+unsafe extern fn startup(ctx: *mut pg::Struct_LogicalDecodingContext,
+                         options: *mut pg::OutputPluginOptions,
+                         _is_init: pg::_bool) {
+    use pg::Enum_OutputPluginOutputType::*;
+    let last_relid = pg::palloc0(size_of::<pg::Oid>() as u64);
+    (*ctx).output_plugin_private = last_relid;
+    (*options).output_type = OUTPUT_PLUGIN_TEXTUAL_OUTPUT;
 }
 
-#[allow(unused_variables)]
-extern fn begin(ctx: *mut pg::Struct_LogicalDecodingContext,
-                txn: *mut pg::ReorderBufferTXN) {
-    unsafe {
-        let s = CString::new("{ \"begin\": %u }").unwrap();
-        pg::OutputPluginPrepareWrite(ctx, CTRUE);
-        pg::appendStringInfo((*ctx).out, s.as_ptr(), (*txn).xid);
-        pg::OutputPluginWrite(ctx, CTRUE);
-    }
+unsafe extern fn begin(ctx: *mut pg::Struct_LogicalDecodingContext,
+                       txn: *mut pg::ReorderBufferTXN) {
+    let s = CString::new("{ \"begin\": %u }").unwrap();
+    pg::OutputPluginPrepareWrite(ctx, CTRUE);
+    pg::appendStringInfo((*ctx).out, s.as_ptr(), (*txn).xid);
+    pg::OutputPluginWrite(ctx, CTRUE);
 }
 
-#[allow(unused_variables)]
-extern fn change(ctx: *mut pg::Struct_LogicalDecodingContext,
-                 txn: *mut pg::ReorderBufferTXN,
-                 relation: pg::Relation,
-                 change: *mut pg::ReorderBufferChange) {
-    unsafe {
-        let relid = (*relation).rd_id;
-        let last_relid: *mut pg::Oid =
-            (*ctx).output_plugin_private as *mut pg::Oid;
-        if *last_relid != relid {
-            pg::OutputPluginPrepareWrite(ctx, CFALSE);
-            append_schema(relation, (*ctx).out);
-            pg::OutputPluginWrite(ctx, CFALSE);
-            *last_relid = relid;
-        }
-        pg::OutputPluginPrepareWrite(ctx, CTRUE);
-        append_change(relation, change, (*ctx).out);
-        pg::OutputPluginWrite(ctx, CTRUE);
+unsafe extern fn change(ctx: *mut pg::Struct_LogicalDecodingContext,
+                        _txn: *mut pg::ReorderBufferTXN,
+                        relation: pg::Relation,
+                        change: *mut pg::ReorderBufferChange) {
+    let relid = (*relation).rd_id;
+    let last_relid: *mut pg::Oid =
+        (*ctx).output_plugin_private as *mut pg::Oid;
+    if *last_relid != relid {
+        pg::OutputPluginPrepareWrite(ctx, CFALSE);
+        append_schema(relation, (*ctx).out);
+        pg::OutputPluginWrite(ctx, CFALSE);
+        *last_relid = relid;
     }
+    pg::OutputPluginPrepareWrite(ctx, CTRUE);
+    append_change(relation, change, (*ctx).out);
+    pg::OutputPluginWrite(ctx, CTRUE);
 }
 
-#[allow(unused_variables)]
-extern fn commit(ctx: *mut pg::Struct_LogicalDecodingContext,
-                 txn: *mut pg::ReorderBufferTXN,
-                 lsn: pg::XLogRecPtr) {
-    unsafe {
-        let s = CString::new("{ \"commit\": %u, \"t\": \"%s\" }").unwrap();
-        let t = pg::timestamptz_to_str((*txn).commit_time);
-        pg::OutputPluginPrepareWrite(ctx, CTRUE);
-        pg::appendStringInfo((*ctx).out, s.as_ptr(), (*txn).xid, t);
-        pg::OutputPluginWrite(ctx, CTRUE);
-        let last_relid: *mut pg::Oid =
-            (*ctx).output_plugin_private as *mut pg::Oid;
-        *last_relid = 0;
-    }
+unsafe extern fn commit(ctx: *mut pg::Struct_LogicalDecodingContext,
+                        txn: *mut pg::ReorderBufferTXN,
+                        _lsn: pg::XLogRecPtr) {
+    let s = CString::new("{ \"commit\": %u, \"t\": \"%s\" }").unwrap();
+    let t = pg::timestamptz_to_str((*txn).commit_time);
+    pg::OutputPluginPrepareWrite(ctx, CTRUE);
+    pg::appendStringInfo((*ctx).out, s.as_ptr(), (*txn).xid, t);
+    pg::OutputPluginWrite(ctx, CTRUE);
+    let last_relid: *mut pg::Oid =
+        (*ctx).output_plugin_private as *mut pg::Oid;
+    *last_relid = 0;
 }
 
-#[allow(unused_variables)]
-extern fn shutdown(ctx: *mut pg::Struct_LogicalDecodingContext) {
-    unsafe {
-        pg::pfree((*ctx).output_plugin_private);
-    }
+unsafe extern fn shutdown(ctx: *mut pg::Struct_LogicalDecodingContext) {
+    pg::pfree((*ctx).output_plugin_private);
 }
 
 
 unsafe fn append_change(relation: pg::Relation,
                         change: *mut pg::ReorderBufferChange,
                         out: pg::StringInfo) {
+    use pg::Enum_ReorderBufferChangeType::*;
     let tuple_desc = (*relation).rd_att;
     let tuples = (*change).data.tp();
     let tuple_new = (*tuples).newtuple;
     let tuple_old = (*tuples).oldtuple;
     let token = match (*change).action {
-        pg::REORDER_BUFFER_CHANGE_INSERT => "insert",
-        pg::REORDER_BUFFER_CHANGE_UPDATE => "update",
-        pg::REORDER_BUFFER_CHANGE_DELETE => "delete",
+        REORDER_BUFFER_CHANGE_INSERT => "insert",
+        REORDER_BUFFER_CHANGE_UPDATE => "update",
+        REORDER_BUFFER_CHANGE_DELETE => "delete",
         _ => panic!("Unrecognized change action!")
     };
     append("{ ", out);
@@ -122,8 +109,8 @@ unsafe fn append_tuple_buf_as_json(data: *mut pg::ReorderBufferTupleBuf,
         let datum = pg::heap_copy_tuple_as_datum(heap_tuple, desc);
         let empty_oid: pg::Oid = 0;
         let json = pg::DirectFunctionCall1Coll(Some(row_to_json),
-                                                  empty_oid,
-                                                  datum);
+                                               empty_oid,
+                                               datum);
         let ptr = json as *const pg::Struct_varlena;
         let text = pg::text_to_cstring(ptr);
         pg::appendStringInfoString(out, text);
@@ -171,7 +158,9 @@ unsafe fn append_schema(relation: pg::Relation, out: pg::StringInfo) {
 }
 
 extern fn row_to_json(fcinfo: pg::FunctionCallInfo) -> pg::Datum {
-    // We wrap the unsafe call to make it safe.
+    // We wrap the unsafe call to make it safe, so that it can be passed as
+    // a function pointer to DirectFunctionCall1Coll(). This is a spurious
+    // artifact of the generated binding.
     unsafe {
         pg::row_to_json(fcinfo)
     }

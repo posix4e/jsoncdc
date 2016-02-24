@@ -1,0 +1,40 @@
+#!/bin/sh
+set -e
+
+if ! which bindgen 2>/dev/null 1>/dev/null
+then
+  echo 'Please install `bindgen` for Rust (`cargo install bindgen`)' >&2
+  echo 'and ensure it is on the PATH.' >&2
+  exit 2
+fi
+
+pg_short_version="`pg_config --version | cut -d' ' -f2 | tr -d . | cut -c-2`"
+output=src/pg"$pg_short_version".rs
+
+# Bindgen doesn't work on OS X without this.
+xcode='/Applications/Xcode.app'
+xcode_libs='Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/'
+if [ -d "$xcode" ]
+then
+  export DYLD_LIBRARY_PATH="$xcode/$xcode_libs":"$DYLD_LIBRARY_PATH"
+fi
+
+echo "Generating $output" >&2
+
+mkdir -p tmp/
+
+cat > tmp/pgheaders.h <<\EOF
+#include <stdarg.h>
+#include "postgres.h"
+#include "fmgr.h"
+#include "utils/builtins.h"
+#include "utils/json.h"
+#include "utils/lsyscache.h"
+#include "replication/output_plugin.h"
+#include "replication/logical.h"
+#include "replication/logical.h"
+EOF
+
+gcc -I "`pg_config --includedir-server`" -E tmp/pgheaders.h > tmp/pgexpanded.h
+
+bindgen -allow-bitfields -builtins tmp/pgexpanded.h > "$output"
