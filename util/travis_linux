@@ -1,14 +1,13 @@
 #!/bin/bash
 set -o errexit -o nounset -o pipefail
+VERSION=9.4
 
 sudo pip install pgxnclient
-sudo -E env PATH="$PATH" make install
-VERSION=9.4
-PG_DIR=/etc/postgresql/"$VERSION"/main
-HBA_CONF="$PG_DIR"/pg_hba.conf
-CONF="$PG_DIR"/postgresql.conf
-sudo pg_ctlcluster "$VERSION" main stop
-
+sudo -E env PATH="$PATH" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" make install
+PG_DIR=/etc/postgresql/${VERSION}/main
+HBA_CONF=$PG_DIR/pg_hba.conf
+CONF=$PG_DIR/postgresql.conf
+sudo pg_ctlcluster $VERSION main stop
 
 echo "Setting $HBA_CONF settings..." >&2
 ( echo 'local    replication     all trust'
@@ -19,6 +18,4 @@ echo "Setting $CONF settings..." >&2
   echo 'max_replication_slots = 1' ) | sudo tee -a "$CONF"
 sudo pg_ctlcluster "$VERSION" main start
 
-
 make test
-
