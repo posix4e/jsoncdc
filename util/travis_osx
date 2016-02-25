@@ -15,8 +15,7 @@ rm -rf $PG_DIR
 
 brew update > $BREW_LOG
 brew remove postgresql >> $BREW_LOG
-brew install homebrew/versions/postgresql94 >> $BREW_LOG
-initdb -D $PG_DIR
+brew upgrade >> $BREW_LOG
 
 make clean all install
 echo "local    replication     all trust" >> $HBA_CONF
@@ -29,6 +28,6 @@ pg_ctl -D $PG_DIR -l $PG_LOG -w -t $TIMEOUT start
 
 STARTED=False
 while ! $STARTED
-	do pg_ctl status -D $PG_DIR && STARTED=True 
+	do pg_ctl status -D $PG_DIR && STARTED=True
 	sleep 1
 done
