@@ -2,13 +2,13 @@ extern crate libc;
 use std::ffi::CString;
 use std::mem::size_of;
 
-#[cfg(pg94)]
+#[cfg(pg94)] #[cfg_attr(rustfmt, rustfmt_skip)]
 #[allow(non_snake_case, non_camel_case_types, non_upper_case_globals)]
 pub mod pg94;
 #[cfg(pg94)]
 pub use pg94 as pg;
 
-#[cfg(pg95)]
+#[cfg(pg95)] #[cfg_attr(rustfmt, rustfmt_skip)]
 #[allow(non_snake_case, non_camel_case_types, non_upper_case_globals)]
 pub mod pg95;
 #[cfg(pg95)]
@@ -17,7 +17,7 @@ pub use pg95 as pg;
 
 // Implementation of initialization and callbacks.
 
-pub unsafe extern fn init(cb: *mut pg::OutputPluginCallbacks) {
+pub unsafe extern "C" fn init(cb: *mut pg::OutputPluginCallbacks) {
     (*cb).startup_cb = Some(startup);
     (*cb).begin_cb = Some(begin);
     (*cb).change_cb = Some(change);
@@ -25,27 +25,27 @@ pub unsafe extern fn init(cb: *mut pg::OutputPluginCallbacks) {
     (*cb).shutdown_cb = Some(shutdown);
 }
 
-unsafe extern fn startup(ctx: *mut pg::Struct_LogicalDecodingContext,
-                         options: *mut pg::OutputPluginOptions,
-                         _is_init: pg::_bool) {
+unsafe extern "C" fn startup(ctx: *mut pg::Struct_LogicalDecodingContext,
+                             options: *mut pg::OutputPluginOptions,
+                             _is_init: pg::_bool) {
     use pg::Enum_OutputPluginOutputType::*;
     let last_relid = pg::palloc0(size_of::<pg::Oid>() as u64);
     (*ctx).output_plugin_private = last_relid;
     (*options).output_type = OUTPUT_PLUGIN_TEXTUAL_OUTPUT;
 }
 
-unsafe extern fn begin(ctx: *mut pg::Struct_LogicalDecodingContext,
-                       txn: *mut pg::ReorderBufferTXN) {
+unsafe extern "C" fn begin(ctx: *mut pg::Struct_LogicalDecodingContext,
+                           txn: *mut pg::ReorderBufferTXN) {
     let s = CString::new("{ \"begin\": %u }").unwrap();
     pg::OutputPluginPrepareWrite(ctx, CTRUE);
     pg::appendStringInfo((*ctx).out, s.as_ptr(), (*txn).xid);
     pg::OutputPluginWrite(ctx, CTRUE);
 }
 
-unsafe extern fn change(ctx: *mut pg::Struct_LogicalDecodingContext,
-                        _txn: *mut pg::ReorderBufferTXN,
-                        relation: pg::Relation,
-                        change: *mut pg::ReorderBufferChange) {
+unsafe extern "C" fn change(ctx: *mut pg::Struct_LogicalDecodingContext,
+                            _txn: *mut pg::ReorderBufferTXN,
+                            relation: pg::Relation,
+                            change: *mut pg::ReorderBufferChange) {
     let relid = (*relation).rd_id;
     let last_relid: *mut pg::Oid =
         (*ctx).output_plugin_private as *mut pg::Oid;
@@ -60,9 +60,9 @@ unsafe extern fn change(ctx: *mut pg::Struct_LogicalDecodingContext,
     pg::OutputPluginWrite(ctx, CTRUE);
 }
 
-unsafe extern fn commit(ctx: *mut pg::Struct_LogicalDecodingContext,
-                        txn: *mut pg::ReorderBufferTXN,
-                        _lsn: pg::XLogRecPtr) {
+unsafe extern "C" fn commit(ctx: *mut pg::Struct_LogicalDecodingContext,
+                            txn: *mut pg::ReorderBufferTXN,
+                            _lsn: pg::XLogRecPtr) {
     let s = CString::new("{ \"commit\": %u, \"t\": \"%s\" }").unwrap();
     let t = pg::timestamptz_to_str((*txn).commit_time);
     pg::OutputPluginPrepareWrite(ctx, CTRUE);
@@ -73,7 +73,7 @@ unsafe extern fn commit(ctx: *mut pg::Struct_LogicalDecodingContext,
     *last_relid = 0;
 }
 
-unsafe extern fn shutdown(ctx: *mut pg::Struct_LogicalDecodingContext) {
+unsafe extern "C" fn shutdown(ctx: *mut pg::Struct_LogicalDecodingContext) {
     pg::pfree((*ctx).output_plugin_private);
 }
 
@@ -90,7 +90,7 @@ unsafe fn append_change(relation: pg::Relation,
         REORDER_BUFFER_CHANGE_INSERT => "insert",
         REORDER_BUFFER_CHANGE_UPDATE => "update",
         REORDER_BUFFER_CHANGE_DELETE => "delete",
-        _ => panic!("Unrecognized change action!")
+        _ => panic!("Unrecognized change action!"),
     };
     append("{ ", out);
     append("\"", out);
@@ -160,13 +160,11 @@ unsafe fn append_schema(relation: pg::Relation, out: pg::StringInfo) {
     append(" }", out);
 }
 
-extern fn row_to_json(fcinfo: pg::FunctionCallInfo) -> pg::Datum {
+extern "C" fn row_to_json(fcinfo: pg::FunctionCallInfo) -> pg::Datum {
     // We wrap the unsafe call to make it safe, so that it can be passed as
     // a function pointer to DirectFunctionCall1Coll(). This is a spurious
     // artifact of the generated binding.
-    unsafe {
-        pg::row_to_json(fcinfo)
-    }
+    unsafe { pg::row_to_json(fcinfo) }
 }
 
 
@@ -174,12 +172,14 @@ extern fn row_to_json(fcinfo: pg::FunctionCallInfo) -> pg::Datum {
 
 #[allow(non_snake_case)]
 #[no_mangle]
-pub unsafe extern fn _PG_init() { }
+pub unsafe extern "C" fn _PG_init() {}
 
 #[allow(non_snake_case)]
 #[no_mangle]
 pub unsafe extern fn
-    _PG_output_plugin_init(cb: *mut pg::OutputPluginCallbacks) { init(cb); }
+    _PG_output_plugin_init(cb: *mut pg::OutputPluginCallbacks) {
+    init(cb);
+}
 
 
 // Miscellaneous.

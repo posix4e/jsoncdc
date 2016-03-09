@@ -14,5 +14,5 @@ addons:
     - libclang-3.4-dev
     - libclang-common-3.4-dev
     - clang-3.4
-before_script: util/travis_${TRAVIS_OS_NAME}
+before_script: util/travis
 script: make test
