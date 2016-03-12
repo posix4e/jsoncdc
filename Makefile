@@ -70,3 +70,5 @@ all: jsoncdc.so
 .PHONY: test
 test:
 	pgxn check ./
+	util/checkstyle
+
