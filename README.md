@@ -27,6 +27,12 @@ Copyright and License
 
 Copyright (c) 2016 Alex Newman, Jason Dusek
 
+JSONCDC is available under multiple licenses:
+
+* the same license as Postgres itself (`licenses/postgres`),
+
+* the Apache 2.0 license (`licenses/apache`).
+
 
 Status
 ------
