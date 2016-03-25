@@ -1,15 +1,15 @@
 JSONCDC
 =======
 
-[![Join the chat at https://gitter.im/posix4e/jsoncdc](https://badges.gitter.im/posix4e/jsoncdc.svg)](https://gitter.im/posix4e/jsoncdc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge). We are also on irc. Just join freenode
-on #jsoncdc
+[![Join the chat at https://gitter.im/posix4e/jsoncdc](https://badges.gitter.im/posix4e/jsoncdc.svg)](https://gitter.im/posix4e/jsoncdc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge).
+We are also on IRC. Just join freenode on #jsoncdc.
 
 JSONCDC provides change data control for Postgres, translating the Postgres
 write ahead log to JSON.
 
 It is written in Rust and, being short, is a good skeleton project for other
-would be plugin authors who'd like to use Rust instead of C when writing
-Postgres extensions.
+would be plugin authors who'd like to use Rust to write Postgres extensions.
+
 
 Our library Requires rust stable 1.1 or greater.  You can bug `posix4e` (or
 `posix4e_`) on Freenode if you want to get involved.
