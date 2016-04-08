@@ -2,7 +2,7 @@
     "name": "jsoncdc",
     "abstract": "Translates Postgres WAL to JSON",
     "description": "A Rust plugin for Postgres Change Data Control.",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "maintainer": [
         "Alex Newman <posi@planet.com>",
         "Jason Dusek <jason.dusek@gmail.com>"
@@ -16,7 +16,7 @@
             "abstract": "Translates Postgres WAL to JSON",
             "file": "sql/jsoncdc.sql",
             "docfile": "doc/jsoncdc.md",
-            "version": "0.0.6"
+            "version": "0.0.7"
         }
     },
     "release_status": "unstable",
