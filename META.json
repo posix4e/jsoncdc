@@ -1,7 +1,7 @@
 {
     "name": "jsoncdc",
     "abstract": "Translates Postgres WAL to JSON",
-    "description": "A Rust plugin for Postgres Change Data Control.",
+    "description": "A Rust plugin for Postgres Change Data Capture.",
     "version": "0.0.7",
     "maintainer": [
         "Alex Newman <posi@planet.com>",
