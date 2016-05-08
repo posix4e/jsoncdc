@@ -2,18 +2,7 @@ extern crate libc;
 use std::ffi::CString;
 use std::mem::size_of;
 
-#[cfg(pg94)] #[cfg_attr(rustfmt, rustfmt_skip)]
-#[allow(non_snake_case, non_camel_case_types, non_upper_case_globals)]
-pub mod pg94;
-#[cfg(pg94)]
-pub use pg94 as pg;
-
-#[cfg(pg95)] #[cfg_attr(rustfmt, rustfmt_skip)]
-#[allow(non_snake_case, non_camel_case_types, non_upper_case_globals)]
-pub mod pg95;
-#[cfg(pg95)]
-pub use pg95 as pg;
-
+extern crate rpgffi as pg;
 
 // Implementation of initialization and callbacks.
 
