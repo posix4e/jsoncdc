@@ -22,7 +22,7 @@ endif
 
 # Note that `MODULES = jsoncdc` implies a dependency on `jsoncdc.so`.
 MODULES      = jsoncdc
-PGXX        := $(shell util/generate_bindings --select-pg)
+PGXX        := $(shell util/get_version)
 HAZRUST     := $(shell which cargo >/dev/null && echo yes || echo no)
 
 ifeq ($(shell uname -s),Darwin)
@@ -33,11 +33,12 @@ endif
 ifeq ($(HAZRUST),yes)
 .PHONY: jsoncdc.so
 jsoncdc.so:
-	cargo rustc --release -- --cfg $(PGXX) $(LINK_FLAGS)
+	cargo rustc --release -- $(LINK_FLAGS)
 	cp target/release/libjsoncdc.* $@
 
 .PHONY: cargoclean
 cargoclean:
+	find . -name Cargo.lock -exec rm {} \;
 	cargo clean
 else
 define CAN_HAZ_RUST
@@ -70,4 +71,3 @@ all: jsoncdc.so
 test:
 	pgxn check ./
 	util/checkstyle
-

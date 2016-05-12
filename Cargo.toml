@@ -10,9 +10,9 @@ build = "build.rs"
 name = "jsoncdc"
 crate-type = ["dylib"]
 
-
 [dependencies]
 libc = "*"
+rpgffi = "0.0.1"
 
 [dev-dependencies]
 rustfmt = "*"
