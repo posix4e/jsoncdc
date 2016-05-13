@@ -67,6 +67,29 @@ unsafe extern "C" fn shutdown(ctx: *mut pg::Struct_LogicalDecodingContext) {
 }
 
 
+trait PGAppend<T> {
+    unsafe fn add_str(self, T);
+    unsafe fn add_json(self, T);
+}
+
+impl<'a> PGAppend<&'a str> for pg::StringInfo {
+    unsafe fn add_str(self, t: &'a str) {
+        pg::appendStringInfoString(self, CString::new(t).unwrap().as_ptr());
+    }
+    unsafe fn add_json(self, t: &'a str) {
+        pg::escape_json(self, CString::new(t).unwrap().as_ptr());
+    }
+}
+
+impl PGAppend<*mut i8> for pg::StringInfo {
+    unsafe fn add_str(self, t: *mut i8) {
+        pg::appendStringInfoString(self, t);
+    }
+    unsafe fn add_json(self, t: *mut i8) {
+        pg::escape_json(self, t);
+    }
+}
+
 unsafe fn append_change(relation: pg::Relation,
                         change: *mut pg::ReorderBufferChange,
                         out: pg::StringInfo) {
@@ -81,16 +104,15 @@ unsafe fn append_change(relation: pg::Relation,
         REORDER_BUFFER_CHANGE_DELETE => "delete",
         _ => panic!("Unrecognized change action!"),
     };
-    append("{ ", out);
-    append("\"", out);
-    append(token, out);
-    append("\": ", out);
+    out.add_str("{ ");
+    out.add_json(token);
+    out.add_str(": ");
     append_tuple_buf_as_json(tuple_new, tuple_desc, out);
     if !tuple_old.is_null() {
-        append(", \"@\": ", out);
+        out.add_str(", \"@\": ");
         append_tuple_buf_as_json(tuple_old, tuple_desc, out);
     }
-    append(" }", out);
+    out.add_str(" }");
 }
 
 unsafe fn append_tuple_buf_as_json(data: *mut pg::ReorderBufferTupleBuf,
@@ -107,12 +129,8 @@ unsafe fn append_tuple_buf_as_json(data: *mut pg::ReorderBufferTupleBuf,
         let text = pg::text_to_cstring(ptr);
         pg::appendStringInfoString(out, text);
     } else {
-        append("{}", out);
+        out.add_str("{}");
     }
-}
-
-unsafe fn append<T: Into<Vec<u8>>>(t: T, out: pg::StringInfo) {
-    pg::appendStringInfoString(out, CString::new(t).unwrap().as_ptr());
 }
 
 unsafe fn append_schema(relation: pg::Relation, out: pg::StringInfo) {
@@ -121,14 +139,14 @@ unsafe fn append_schema(relation: pg::Relation, out: pg::StringInfo) {
     let name = pg::get_rel_name(relid);
     let ns = pg::get_namespace_name(pg::get_rel_namespace(relid));
     let qualified_name = pg::quote_qualified_identifier(ns, name);
-    append("{ \"table\": ", out);
-    append("\"", out);
-    pg::appendStringInfoString(out, qualified_name);
-    append("\"", out);
-    append(",", out);
-    append(" \"schema\": ", out);
-    append("[", out);
-    let fmt = CString::new("{\"%s\":\"%s\"}").unwrap();
+    out.add_str("{ ");
+    out.add_json("table");
+    out.add_str(": ");
+    out.add_json(qualified_name);
+    out.add_str(", ");
+    out.add_json("schema");
+    out.add_str(": ");
+    out.add_str("[");
     let mut first: bool = true;
     for i in 0..(*tupdesc).natts {
         let attr = *(*tupdesc).attrs.offset(i as isize);
@@ -139,14 +157,18 @@ unsafe fn append_schema(relation: pg::Relation, out: pg::StringInfo) {
         let col = pg::get_attname(relid, num);
         let typ = pg::format_type_be(pg::get_atttype(relid, num));
         if !first {
-            append(",", out);
+            out.add_str(",");
         } else {
             first = false;
         }
-        pg::appendStringInfo(out, fmt.as_ptr(), col, typ);
+        out.add_str("{");
+        out.add_json(col);
+        out.add_str(":");
+        out.add_json(typ);
+        out.add_str("}");
     }
-    append("]", out);
-    append(" }", out);
+    out.add_str("]");
+    out.add_str(" }");
 }
 
 extern "C" fn row_to_json(fcinfo: pg::FunctionCallInfo) -> pg::Datum {

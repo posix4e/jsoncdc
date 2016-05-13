@@ -1,0 +1,15 @@
+\set ECHO none
+ created logical replication slot
+
+ { "table": "jsoncdc.\"****\"", "schema": [{"i":"integer"}] }
+ { "insert": {"i":1} }
+ { "insert": {"i":2} }
+ { "insert": {"i":3} }
+ { "insert": {"i":4} }
+ { "insert": {"i":5} }
+ { "insert": {"i":6} }
+ { "insert": {"i":7} }
+ { "insert": {"i":8} }
+
+ deleted logical replication slot
+
