@@ -1,0 +1,11 @@
+\set ECHO none
+ created logical replication slot
+
+ { "table": "jsoncdc.test", "schema": [{"i":"integer"},{"s":"text"}] }
+ { "insert": {"i":1,"s":"simple text"} }
+ { "insert": {"i":2,"s":"text with \"quoted\" text"} }
+ { "insert": {"i":3,"s":"newlines\nand\r\ncarriage returns"} }
+ { "insert": {"i":4,"s":"quoted text with\n\"newline\""} }
+
+ deleted logical replication slot
+
