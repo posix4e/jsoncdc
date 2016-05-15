@@ -122,9 +122,8 @@ unsafe fn append_tuple_buf_as_json(data: *mut pg::ReorderBufferTupleBuf,
         let heap_tuple = &mut (*data).tuple;
         let datum = pg::heap_copy_tuple_as_datum(heap_tuple, desc);
         let empty_oid: pg::Oid = 0;
-        let json = pg::DirectFunctionCall1Coll(Some(row_to_json),
-                                               empty_oid,
-                                               datum);
+        let json =
+            pg::DirectFunctionCall1Coll(Some(row_to_json), empty_oid, datum);
         let ptr = json as *const pg::Struct_varlena;
         let text = pg::text_to_cstring(ptr);
         pg::appendStringInfoString(out, text);
