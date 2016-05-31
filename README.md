@@ -80,8 +80,3 @@ Formats
 -------
 
 - [x] JSON output
-
-Features
---------
-
-- [ ] Monitored by Rust metrics
