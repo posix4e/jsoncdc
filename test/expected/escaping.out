@@ -2,14 +2,14 @@
  created logical replication slot
 
  { "table": "jsoncdc.\"****\"", "schema": [{"i":"integer"}] }
- { "insert": {"i":1} }
- { "insert": {"i":2} }
- { "insert": {"i":3} }
- { "insert": {"i":4} }
- { "insert": {"i":5} }
- { "insert": {"i":6} }
- { "insert": {"i":7} }
- { "insert": {"i":8} }
+ { "insert": {"i":1}, "table": "jsoncdc.\"****\"" }
+ { "insert": {"i":2}, "table": "jsoncdc.\"****\"" }
+ { "insert": {"i":3}, "table": "jsoncdc.\"****\"" }
+ { "insert": {"i":4}, "table": "jsoncdc.\"****\"" }
+ { "insert": {"i":5}, "table": "jsoncdc.\"****\"" }
+ { "insert": {"i":6}, "table": "jsoncdc.\"****\"" }
+ { "insert": {"i":7}, "table": "jsoncdc.\"****\"" }
+ { "insert": {"i":8}, "table": "jsoncdc.\"****\"" }
 
  deleted logical replication slot
 

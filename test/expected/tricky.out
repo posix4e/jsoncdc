@@ -2,31 +2,31 @@
  created logical replication slot
 
  { "table": "jsoncdc.tab1", "schema": [{"i":"integer"},{"h":"jsoncdc.hstore"}] }
- { "insert": {"i":1,"h":{}} }
+ { "insert": {"i":1,"h":{}}, "table": "jsoncdc.tab1" }
  { "table": "jsoncdc.tab2", "schema": [{"i":"integer"},{"j":"integer"}] }
- { "insert": {"i":1,"j":0} }
+ { "insert": {"i":1,"j":0}, "table": "jsoncdc.tab2" }
  { "table": "jsoncdc.tab1", "schema": [{"i":"integer"},{"h":"jsoncdc.hstore"}] }
- { "insert": {"i":2,"h":{}} }
+ { "insert": {"i":2,"h":{}}, "table": "jsoncdc.tab1" }
  { "table": "jsoncdc.tab2", "schema": [{"i":"integer"},{"j":"integer"}] }
- { "insert": {"i":2,"j":0} }
+ { "insert": {"i":2,"j":0}, "table": "jsoncdc.tab2" }
  { "table": "jsoncdc.tab1", "schema": [{"i":"integer"},{"h":"jsoncdc.hstore"}] }
- { "insert": {"i":3,"h":{}} }
+ { "insert": {"i":3,"h":{}}, "table": "jsoncdc.tab1" }
  { "table": "jsoncdc.tab2", "schema": [{"i":"integer"},{"j":"integer"}] }
- { "insert": {"i":3,"j":0} }
+ { "insert": {"i":3,"j":0}, "table": "jsoncdc.tab2" }
  { "table": "jsoncdc.tab1", "schema": [{"i":"integer"},{"h":"jsoncdc.hstore"}] }
- { "insert": {"i":4,"h":{}} }
+ { "insert": {"i":4,"h":{}}, "table": "jsoncdc.tab1" }
  { "table": "jsoncdc.tab2", "schema": [{"i":"integer"},{"j":"integer"}] }
- { "insert": {"i":4,"j":0} }
+ { "insert": {"i":4,"j":0}, "table": "jsoncdc.tab2" }
  { "table": "jsoncdc.tab1", "schema": [{"i":"integer"},{"h":"jsoncdc.hstore"}] }
- { "update": {"i":1,"h":{"i": "1", "2i": "2"}} }
- { "update": {"i":2,"h":{"i": "2", "2i": "4"}} }
- { "update": {"i":3,"h":{"i": "3", "2i": "6"}} }
- { "update": {"i":4,"h":{"i": "4", "2i": "8"}} }
- { "delete": {}, "@": {"i":1,"h":null} }
- { "delete": {}, "@": {"i":3,"h":null} }
+ { "update": {"i":1,"h":{"i": "1", "2i": "2"}}, "table": "jsoncdc.tab1" }
+ { "update": {"i":2,"h":{"i": "2", "2i": "4"}}, "table": "jsoncdc.tab1" }
+ { "update": {"i":3,"h":{"i": "3", "2i": "6"}}, "table": "jsoncdc.tab1" }
+ { "update": {"i":4,"h":{"i": "4", "2i": "8"}}, "table": "jsoncdc.tab1" }
+ { "delete": {}, "@": {"i":1,"h":null}, "table": "jsoncdc.tab1" }
+ { "delete": {}, "@": {"i":3,"h":null}, "table": "jsoncdc.tab1" }
  { "table": "jsoncdc.tab2", "schema": [{"i":"integer"},{"j":"integer"}] }
- { "delete": {}, "@": {"i":1,"j":null} }
- { "delete": {}, "@": {"i":3,"j":null} }
+ { "delete": {}, "@": {"i":1,"j":null}, "table": "jsoncdc.tab2" }
+ { "delete": {}, "@": {"i":3,"j":null}, "table": "jsoncdc.tab2" }
 
  deleted logical replication slot
 
