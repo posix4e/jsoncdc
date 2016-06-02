@@ -1,7 +1,7 @@
 \set ECHO none
  created logical replication slot
 
- { "table": "jsoncdc.test", "schema": [{"i":"integer"},{"h":"jsoncdc.hstore"}] }
+ { "schema": [{"i":"integer"},{"h":"jsoncdc.hstore"}], "table": "jsoncdc.test" }
  { "insert": {"i":1,"h":{}}, "table": "jsoncdc.test" }
  { "insert": {"i":2,"h":{}}, "table": "jsoncdc.test" }
  { "insert": {"i":3,"h":{}}, "table": "jsoncdc.test" }
@@ -10,7 +10,7 @@
  { "insert": {"i":6,"h":{}}, "table": "jsoncdc.test" }
  { "insert": {"i":7,"h":{}}, "table": "jsoncdc.test" }
  { "insert": {"i":8,"h":{}}, "table": "jsoncdc.test" }
- { "table": "jsoncdc.test", "schema": [{"i":"integer"},{"h":"jsoncdc.hstore"}] }
+ { "schema": [{"i":"integer"},{"h":"jsoncdc.hstore"}], "table": "jsoncdc.test" }
  { "update": {"i":30,"h":{}}, "@": {"i":3,"h":null}, "table": "jsoncdc.test" }
  { "update": {"i":60,"h":{}}, "@": {"i":6,"h":null}, "table": "jsoncdc.test" }
  { "update": {"i":1,"h":{"i": "1", "2i": "2"}}, "table": "jsoncdc.test" }

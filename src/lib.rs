@@ -147,10 +147,6 @@ unsafe fn append_schema(relation: pg::Relation, out: pg::StringInfo) {
     let ns = pg::get_namespace_name(pg::get_rel_namespace(relid));
     let qualified_name = pg::quote_qualified_identifier(ns, name);
     out.add_str("{ ");
-    out.add_json("table");
-    out.add_str(": ");
-    out.add_json(qualified_name);
-    out.add_str(", ");
     out.add_json("schema");
     out.add_str(": ");
     out.add_str("[");
@@ -175,6 +171,10 @@ unsafe fn append_schema(relation: pg::Relation, out: pg::StringInfo) {
         out.add_str("}");
     }
     out.add_str("]");
+    out.add_str(", ");
+    out.add_json("table");
+    out.add_str(": ");
+    out.add_json(qualified_name);
     out.add_str(" }");
 }
 
