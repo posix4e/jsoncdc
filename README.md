@@ -1,7 +1,11 @@
 JSONCDC
 =======
 
-[![Join the chat at https://gitter.im/posix4e/jsoncdc](https://badges.gitter.im/posix4e/jsoncdc.svg)](https://gitter.im/posix4e/jsoncdc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge).
+[![Join the chat at https://gitter.im/posix4e/jsoncdc](https://badges.gitter.im/posix4e/jsoncdc.svg)](https://gitter.im/posix4e/jsoncdc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![HuBoard
+badge](http://img.shields.io/badge/Hu-Board-7965cc.svg)](https://huboard.com/posix4e/jsoncdc)
+[![Linux
+Status](https://travis-ci.org/posix4e/jsoncdc.svg?branch=master)](https://travis-ci.org/posix4e/jsoncdc)
 
  #jsoncdc on freenode irc
 
@@ -13,12 +17,6 @@ would be plugin authors who'd like to use Rust to write Postgres extensions.
 
 Our library Requires rust stable 1.1 or greater.
 
-Tasks to work on should be available on:
-[![HuBoard
-badge](http://img.shields.io/badge/Hu-Board-7965cc.svg)](https://huboard.com/posix4e/jsoncdc)
-
-[![Linux
-Status](https://travis-ci.org/posix4e/jsoncdc.svg?branch=master)](https://travis-ci.org/posix4e/jsoncdc)
 
 
 Copyright and License
