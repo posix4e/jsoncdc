@@ -48,9 +48,9 @@ The output format of `jsoncdc` is very regular, consisting of `begin`,
 `table`, `insert`, `update` and `delete` clauses as JSON objects, one per line:
 
     { "begin": <xid> }
-    { "table": <name of table>, "schema": <column names and type> }
+    { "schema": <column names and type>, "table": <name of table> }
     ...inserts, updates and deletes for this table...
-    { "table": <name of next table>, "schema": <column names and type> }
+    { "schema": <column names and type>, "table": <name of next table> }
     ...inserts, updates and deletes for next table...
     { "commit": <xid>, "t": <timestamp with timezone> }
 
