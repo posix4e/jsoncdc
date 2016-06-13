@@ -1,20 +1,21 @@
 FROM postgres:9.5
 
-ENV RUST_VERSION 1.8.0
 ENV PATH ~/.cargo/bin/:$PATH
+ENV CARGO_HOME /cargo
+ENV SRC_PATH /src
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends ca-certificates curl git make gcc postgresql-server-dev-$PG_MAJOR=$PG_VERSION python-pip \
-  && mkdir -p /tmp/build \
-  && curl -o /tmp/build/rust-${RUST_VERSION}.tar.gz -SL https://static.rust-lang.org/dist/rust-${RUST_VERSION}-x86_64-unknown-linux-gnu.tar.gz \
-  && tar -xzf /tmp/build/rust-${RUST_VERSION}.tar.gz -C /tmp/build/ \
-  && sh /tmp/build/rust-${RUST_VERSION}-x86_64-unknown-linux-gnu/install.sh \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates curl git make gcc postgresql-server-dev-$PG_MAJOR=$PG_VERSION python-pip \
   && rm -rf /var/lib/apt/lists/* \
+  && curl -sf https://static.rust-lang.org/rustup.sh -o rustup.sh \
+  && bash rustup.sh --disable-sudo -y --verbose \
   && pip install pgxnclient \
-  && cargo install rustfmt
+  && cargo install rustfmt \
+  && mkdir -p "$CARGO_HOME"
 
-WORKDIR /src
+WORKDIR $SRC_PATH
 
-VOLUME /src
+VOLUME $SRC_PATH
 
 COPY util/docker /docker-entrypoint-initdb.d/docker.sh
