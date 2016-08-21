@@ -123,15 +123,51 @@ unsafe fn append_change(relation: pg::Relation,
     out.add_str(" }");
 }
 
+
 unsafe fn append_tuple_buf_as_json(data: *mut pg::ReorderBufferTupleBuf,
                                    desc: pg::TupleDesc,
                                    out: pg::StringInfo) {
     if !data.is_null() {
         let heap_tuple = &mut (*data).tuple;
+        let n = (*desc).natts as usize;
+        let attrs = (*desc).attrs;
+
+        // Pull out every single field to check for stale TOAST.
+        let mut datums: Vec<pg::Datum> = Vec::new();
+        let mut nulls: Vec<pg::_bool> = Vec::new();
+        datums.resize(n, 0);
+        nulls.resize(n, CFALSE);
+        pg::heap_deform_tuple(heap_tuple,
+                              desc,
+                              datums.as_mut_ptr(),
+                              nulls.as_mut_ptr());
+
+        let mut skip: Vec<pg::Form_pg_attribute> = Vec::with_capacity(n);
+
+        for i in 0..n {
+            let datum: pg::Datum = datums[i];
+            let attr = *attrs.offset(i as isize);
+            if is_stale_toast(datum) && (*attr).attisdropped == CFALSE {
+                skip.push(attr);
+            }
+        }
+
+        // Mark as dropped to trick row_to_json().
+        for attr in &mut skip {
+            (**attr).attisdropped = CTRUE;
+        }
+
         let datum = pg::heap_copy_tuple_as_datum(heap_tuple, desc);
         let empty_oid: pg::Oid = 0;
         let json =
             pg::DirectFunctionCall1Coll(Some(row_to_json), empty_oid, datum);
+
+        // Set back to true because who knows how else these attrs, which are
+        // part of the passed in tuple description, are being used.
+        for attr in &mut skip {
+            (**attr).attisdropped = CFALSE;
+        }
+
         let ptr = json as *const pg::Struct_varlena;
         let text = pg::text_to_cstring(ptr);
         pg::appendStringInfoString(out, text);
@@ -183,6 +219,10 @@ extern "C" fn row_to_json(fcinfo: pg::FunctionCallInfo) -> pg::Datum {
     // a function pointer to DirectFunctionCall1Coll(). This is a spurious
     // artifact of the generated binding.
     unsafe { pg::row_to_json(fcinfo) }
+}
+
+fn is_stale_toast(datum: pg::Datum) -> bool {
+    false
 }
 
 
