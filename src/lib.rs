@@ -159,7 +159,7 @@ unsafe fn append_tuple_buf_as_json(data: *mut pg::ReorderBufferTupleBuf,
             }
             let attr = *attrs.offset(i as isize);
             let ty = (*attr).atttypid;
-            if is_stale_toast(datum, ty) && (*attr).attisdropped == CFALSE {
+            if (*attr).attisdropped == CFALSE && is_stale_toast(datum, ty) {
                 skip.push(attr);
             }
         }
