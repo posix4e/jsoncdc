@@ -4,6 +4,14 @@ use std::mem::size_of;
 
 extern crate rpgffi as pg;
 
+
+macro_rules! log {
+    ($msg:expr) => {
+        elog(file!(), line!(), "log()", $msg)
+    }
+}
+
+
 // Implementation of initialization and callbacks.
 
 pub unsafe extern "C" fn init(cb: *mut pg::OutputPluginCallbacks) {
@@ -244,3 +252,13 @@ pub unsafe extern fn
 
 const CTRUE: pg::_bool = 1;
 const CFALSE: pg::_bool = 0;
+
+pub unsafe fn elog(file: &str, line: u32, function: &str, msg: &str) {
+    let level = 15;         // The LOG level of logging is normally server-only
+    pg::elog_start(CString::new(file).unwrap().as_ptr(),
+                   line as ::std::os::raw::c_int,
+                   CString::new(function).unwrap().as_ptr());
+    pg::elog_finish(level,
+                    CString::new("%s").unwrap().as_ptr(),
+                    CString::new(msg).unwrap().as_ptr());
+}
