@@ -154,8 +154,12 @@ unsafe fn append_tuple_buf_as_json(data: *mut pg::ReorderBufferTupleBuf,
 
         for i in 0..n {
             let datum: pg::Datum = datums[i];
+            if datum == 0 {
+                continue;
+            }
             let attr = *attrs.offset(i as isize);
-            if is_stale_toast(datum) && (*attr).attisdropped == CFALSE {
+            let ty = (*attr).atttypid;
+            if is_stale_toast(datum, ty) && (*attr).attisdropped == CFALSE {
                 skip.push(attr);
             }
         }
@@ -229,8 +233,35 @@ extern "C" fn row_to_json(fcinfo: pg::FunctionCallInfo) -> pg::Datum {
     unsafe { pg::row_to_json(fcinfo) }
 }
 
-fn is_stale_toast(datum: pg::Datum) -> bool {
-    false
+/** This is a simulation of `VARATT_IS_EXTERNAL_ONDISK`.
+
+```c
+#define VARATT_IS_EXTERNAL_ONDISK(PTR) \
+  (VARATT_IS_EXTERNAL(PTR) && VARTAG_EXTERNAL(PTR) == VARTAG_ONDISK)
+
+    #define VARATT_IS_EXTERNAL(PTR)             VARATT_IS_1B_E(PTR)
+
+        #define VARATT_IS_1B_E(PTR) \
+            ((((varattrib_1b *) (PTR))->va_header) == 0x01)
+
+    #define VARTAG_EXTERNAL(PTR)                VARTAG_1B_E(PTR)
+
+        #define VARTAG_1B_E(PTR) \
+            (((varattrib_1b_e *) (PTR))->va_tag)
+```
+*/
+unsafe fn is_stale_toast(datum: pg::Datum, type_id: pg::Oid) -> bool {
+    use pg::Enum_vartag_external::VARTAG_ONDISK;
+    let mut ignored: pg::Oid = 0;
+    let mut is_variable_length: pg::_bool = CFALSE;
+    pg::getTypeOutputInfo(type_id, &mut ignored, &mut is_variable_length);
+    if is_variable_length == CTRUE {
+        // Cast to varlena metadata type.
+        let v = datum as *const pg::varattrib_1b_e;
+        (*v).va_header == 0x01 && (*v).va_tag == (VARTAG_ONDISK as u8)
+    } else {
+        false
+    }
 }
 
 
