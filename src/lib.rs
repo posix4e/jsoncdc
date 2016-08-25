@@ -160,6 +160,7 @@ unsafe fn append_tuple_buf_as_json(data: *mut pg::ReorderBufferTupleBuf,
             }
             if (*attr).attisdropped == CFALSE && is_stale_toast(datum, attr) {
                 skip.push(attr);
+                // Mark as NULL to trick heap_form_tuple().
                 nulls[i] = CTRUE;
             }
         }
@@ -169,9 +170,8 @@ unsafe fn append_tuple_buf_as_json(data: *mut pg::ReorderBufferTupleBuf,
             (**attr).attisdropped = CTRUE;
         }
 
-        let new = pg::heap_form_tuple(desc,
-                                      datums.as_mut_ptr(),
-                                      nulls.as_mut_ptr());
+        let new =
+            pg::heap_form_tuple(desc, datums.as_mut_ptr(), nulls.as_mut_ptr());
 
         let datum = pg::heap_copy_tuple_as_datum(new, desc);
         let empty_oid: pg::Oid = 0;
@@ -187,6 +187,19 @@ unsafe fn append_tuple_buf_as_json(data: *mut pg::ReorderBufferTupleBuf,
         let ptr = json as *const pg::Struct_varlena;
         let text = pg::text_to_cstring(ptr);
         pg::appendStringInfoString(out, text);
+
+        if skip.len() > 0 {
+            out.add_str(", ");
+            out.add_json("skipped");
+            out.add_str(": [");
+            for (i, attr) in skip.into_iter().enumerate() {
+                if i > 0 {
+                    out.add_str(", ");
+                }
+                out.add_json((*attr).attname.data.as_mut_ptr());
+            }
+            out.add_str("]");
+        }
     } else {
         out.add_str("{}");
     }
@@ -267,7 +280,7 @@ unsafe fn is_stale_toast(datum: pg::Datum,
         if (*v).va_header != 0x01 {
             return false;
         }
-        return (*v).va_tag == (VARTAG_ONDISK as u8)
+        return (*v).va_tag == (VARTAG_ONDISK as u8);
     }
     return false;
 }
