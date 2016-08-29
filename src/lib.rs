@@ -1,8 +1,16 @@
 extern crate libc;
-use std::ffi::CString;
+use std::ffi::{CStr, CString};
 use std::mem::size_of;
 
 extern crate rpgffi as pg;
+
+
+macro_rules! log {
+    ($msg:expr) => {
+        elog(file!(), line!(), "log()", $msg)
+    }
+}
+
 
 // Implementation of initialization and callbacks.
 
@@ -123,18 +131,75 @@ unsafe fn append_change(relation: pg::Relation,
     out.add_str(" }");
 }
 
+
 unsafe fn append_tuple_buf_as_json(data: *mut pg::ReorderBufferTupleBuf,
                                    desc: pg::TupleDesc,
                                    out: pg::StringInfo) {
     if !data.is_null() {
         let heap_tuple = &mut (*data).tuple;
-        let datum = pg::heap_copy_tuple_as_datum(heap_tuple, desc);
+        let n = (*desc).natts as usize;
+        let attrs = (*desc).attrs;
+
+        // Pull out every single field to check for stale TOAST.
+        let mut datums: Vec<pg::Datum> = Vec::new();
+        let mut nulls: Vec<pg::_bool> = Vec::new();
+        datums.resize(n, 0);
+        nulls.resize(n, CFALSE);
+        pg::heap_deform_tuple(heap_tuple,
+                              desc,
+                              datums.as_mut_ptr(),
+                              nulls.as_mut_ptr());
+
+        let mut skip: Vec<pg::Form_pg_attribute> = Vec::with_capacity(n);
+
+        for i in 0..n {
+            let datum: pg::Datum = datums[i];
+            let attr = *attrs.offset(i as isize);
+            if datum == 0 || (*attr).attnum <= 0 {
+                continue;
+            }
+            if (*attr).attisdropped == CFALSE && is_stale_toast(datum, attr) {
+                skip.push(attr);
+                // Mark as NULL to trick heap_form_tuple().
+                nulls[i] = CTRUE;
+            }
+        }
+
+        // Mark as dropped to trick row_to_json().
+        for attr in &mut skip {
+            (**attr).attisdropped = CTRUE;
+        }
+
+        let new =
+            pg::heap_form_tuple(desc, datums.as_mut_ptr(), nulls.as_mut_ptr());
+
+        let datum = pg::heap_copy_tuple_as_datum(new, desc);
         let empty_oid: pg::Oid = 0;
         let json =
             pg::DirectFunctionCall1Coll(Some(row_to_json), empty_oid, datum);
+
+        // Set back to true because who knows how else these attrs, which are
+        // part of the passed in tuple description, are being used.
+        for attr in &mut skip {
+            (**attr).attisdropped = CFALSE;
+        }
+
         let ptr = json as *const pg::Struct_varlena;
         let text = pg::text_to_cstring(ptr);
         pg::appendStringInfoString(out, text);
+
+        if skip.len() > 0 {
+            out.add_str(", ");
+            out.add_json("skipped");
+            out.add_str(": [");
+            for (i, attr) in skip.into_iter().enumerate() {
+                if i > 0 {
+                    out.add_str(", ");
+                }
+                out.add_json((*attr).attname.data.as_mut_ptr());
+            }
+            out.add_str("]");
+        }
     } else {
         out.add_str("{}");
     }
@@ -154,7 +219,7 @@ unsafe fn append_schema(relation: pg::Relation, out: pg::StringInfo) {
     for i in 0..(*tupdesc).natts {
         let attr = *(*tupdesc).attrs.offset(i as isize);
         let num = (*attr).attnum;
-        if (*attr).attisdropped == 1 || num <= 0 {
+        if (*attr).attisdropped == CTRUE || num <= 0 {
             continue;
         }
         let col = pg::get_attname(relid, num);
@@ -185,6 +250,41 @@ extern "C" fn row_to_json(fcinfo: pg::FunctionCallInfo) -> pg::Datum {
     unsafe { pg::row_to_json(fcinfo) }
 }
 
+/** This is a simulation of `VARATT_IS_EXTERNAL_ONDISK`.
+
+```c
+#define VARATT_IS_EXTERNAL_ONDISK(PTR) \
+  (VARATT_IS_EXTERNAL(PTR) && VARTAG_EXTERNAL(PTR) == VARTAG_ONDISK)
+
+    #define VARATT_IS_EXTERNAL(PTR)             VARATT_IS_1B_E(PTR)
+
+        #define VARATT_IS_1B_E(PTR) \
+            ((((varattrib_1b *) (PTR))->va_header) == 0x01)
+
+    #define VARTAG_EXTERNAL(PTR)                VARTAG_1B_E(PTR)
+
+        #define VARTAG_1B_E(PTR) \
+            (((varattrib_1b_e *) (PTR))->va_tag)
+```
+*/
+unsafe fn is_stale_toast(datum: pg::Datum,
+                         attr: pg::Form_pg_attribute)
+                         -> bool {
+    use pg::Enum_vartag_external::VARTAG_ONDISK;
+    let mut o: pg::Oid = 0;                        // Output function; not used
+    let mut is_variable_length: pg::_bool = CFALSE;
+    pg::getTypeOutputInfo((*attr).atttypid, &mut o, &mut is_variable_length);
+    if is_variable_length == CTRUE {
+        // Cast to varlena metadata type.
+        let v = datum as *const pg::varattrib_1b_e;
+        if (*v).va_header != 0x01 {
+            return false;
+        }
+        return (*v).va_tag == (VARTAG_ONDISK as u8);
+    }
+    return false;
+}
+
 
 // Symbols Postgres needs to find.
 
@@ -204,3 +304,18 @@ pub unsafe extern fn
 
 const CTRUE: pg::_bool = 1;
 const CFALSE: pg::_bool = 0;
+
+pub unsafe fn elog(file: &str, line: u32, function: &str, msg: &str) {
+    let level = 15;         // The LOG level of logging is normally server-only
+    pg::elog_start(CString::new(file).unwrap().as_ptr(),
+                   line as ::std::os::raw::c_int,
+                   CString::new(function).unwrap().as_ptr());
+    pg::elog_finish(level,
+                    CString::new("%s").unwrap().as_ptr(),
+                    CString::new(msg).unwrap().as_ptr());
+}
+
+pub unsafe fn fmt_name(name: pg::NameData) -> String {
+    let cstr = CStr::from_ptr(name.data.as_ptr());
+    format!("{:?}", cstr.to_owned())
+}
