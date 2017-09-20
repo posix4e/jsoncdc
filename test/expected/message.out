@@ -11,13 +11,10 @@
 
  non-transactional
 
- json
-
- { "message": "#1", "prefix": "sent first", "transactional": false }
- { "message": "#2", "prefix": "sent third", "transactional": false }
- { "message": "#3", "prefix": "sent fifth", "transactional": false }
- { "message": "#4", "prefix": "sent fourth", "transactional": true }
- { "message": "{\"hello\" : \"world\"}", "prefix": "sent last", "transactional": true }
+ { "prefix": "sent first", "message": "#1", "transactional": false }
+ { "prefix": "sent third", "message": "#2", "transactional": false }
+ { "prefix": "sent fifth", "message": "#3", "transactional": false }
+ { "prefix": "sent fourth", "message": "#4", "transactional": true }
 
  deleted logical replication slot
 

@@ -2,6 +2,8 @@ extern crate libc;
 use std::ffi::{CStr, CString};
 use std::fmt;
 use std::mem::size_of;
+use std::ops::Deref;
+use std::slice::from_raw_parts;
 
 extern crate rpgffi as pg;
 
@@ -86,8 +88,8 @@ unsafe extern "C" fn shutdown(ctx: *mut pg::Struct_LogicalDecodingContext) {
 
 unsafe extern "C" fn message(
     ctx: *mut pg::Struct_LogicalDecodingContext,
-    txn: *mut pg::ReorderBufferTXN,
-    lsn: pg::XLogRecPtr,
+    _txn: *mut pg::ReorderBufferTXN,
+    _lsn: pg::XLogRecPtr,
     transactional: pg::_bool,
     prefix: *const std::os::raw::c_char,
     message_size: pg::Size,
@@ -113,10 +115,8 @@ impl<'a> PGAppend<&'a str> for pg::StringInfo {
 }
 
 impl PGAppend<*mut i8> for pg::StringInfo {
-    unsafe fn add_str(self, t: *mut i8) {
-        pg::appendStringInfoString(self, t);
-    }
-    unsafe fn add_json(self, t: *mut i8) { pg::escape_json(self, t); }
+    unsafe fn add_str(self, t: *mut i8) { self.add_str(t as *const i8); }
+    unsafe fn add_json(self, t: *mut i8) { self.add_json(t as *const i8); }
 }
 
 impl PGAppend<*const i8> for pg::StringInfo {
@@ -316,21 +316,24 @@ unsafe fn append_message(
     message: *const std::os::raw::c_char,
     out: pg::StringInfo,
 ) {
-    // { "message": %s,
-    out.add_str("{ ");
-    out.add_json("message");
-    out.add_str(": \"");
-    // TODO: Can we escape this like add_json?
-    pg::appendBinaryStringInfo(out, message, message_size as i32);
-    out.add_str("\", ");
+    let bytes: &[u8] = from_raw_parts(
+        message as *const u8, // c_char, i8, u8 -- I guess it's all the same...
+        message_size as usize,
+    );
+    let decoded = String::from_utf8_lossy(bytes);
 
-    // "prefix": %s,
+    out.add_str("{ ");
+
     out.add_json("prefix");
     out.add_str(": ");
     out.add_json(prefix);
     out.add_str(", ");
 
-    // "transactional": %s }
+    out.add_json("message");
+    out.add_str(": ");
+    out.add_json(decoded.deref());
+    out.add_str(", ");
+
     out.add_json("transactional");
     out.add_str(": ");
 
