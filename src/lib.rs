@@ -1,11 +1,13 @@
-extern crate libc;
 use std::ffi::{CStr, CString};
 use std::fmt;
 use std::mem::size_of;
 use std::ops::Deref;
 use std::slice::from_raw_parts;
 
+extern crate base64;
+extern crate libc;
 extern crate rpgffi as pg;
+extern crate serde_json;
 
 
 macro_rules! log {
@@ -126,9 +128,49 @@ impl PGAppend<*const i8> for pg::StringInfo {
     unsafe fn add_json(self, t: *const i8) { pg::escape_json(self, t); }
 }
 
-struct Wrapped(pg::Enum_ReorderBufferChangeType);
+struct OutputBytesInMostFriendlyWay(*const u8, usize);
 
-impl fmt::Display for Wrapped {
+impl PGAppend<OutputBytesInMostFriendlyWay> for pg::StringInfo {
+    unsafe fn add_str(self, t: OutputBytesInMostFriendlyWay) {
+        let bytes: &[u8] = from_raw_parts(t.0, t.1);
+        let decoded = String::from_utf8_lossy(bytes);
+        self.add_str(decoded.deref());
+    }
+    unsafe fn add_json(self, t: OutputBytesInMostFriendlyWay) {
+        let bytes: &[u8] = from_raw_parts(t.0, t.1);
+        // Although null is allowed in a string, Postgres's internal JSON
+        // functions do not work well with it (see `escape_json`, which takes a
+        // C-string) and Postgres does not allow conversion from `bytea` to
+        // `text` where the `bytea` contains null.
+        if !bytes.contains(&0) {
+            if let Ok(ref s) = String::from_utf8(bytes.to_vec()) {
+                if s.trim_left().starts_with("{") {
+                    let parsed: serde_json::Result<serde_json::Value> =
+                        serde_json::from_str(s);
+                    if let Ok(ref json) = parsed {
+                        self.add_str(json.to_string().deref());
+                        return;
+                    }
+                }
+                // Definitely a string.
+                self.add_json(s.deref());
+                return;
+            }
+        }
+        // Definitely binary.
+        let as_base64: String = base64::encode(bytes);
+        self.add_str("{");
+        self.add_json("base64");
+        self.add_str(":");
+        self.add_json(as_base64.deref());
+        self.add_str("}");
+    }
+}
+
+
+struct BufferChangeWrapper(pg::Enum_ReorderBufferChangeType);
+
+impl fmt::Display for BufferChangeWrapper {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         use pg::Enum_ReorderBufferChangeType::*;
         #[allow(unreachable_patterns)]
@@ -172,7 +214,7 @@ unsafe fn append_change(
         log!(
             format!(
                 "Unrecognized Change Action: [ {} ]",
-                Wrapped((*change).action)
+                BufferChangeWrapper((*change).action)
             )
             .as_str()
         );
@@ -316,11 +358,10 @@ unsafe fn append_message(
     message: *const std::os::raw::c_char,
     out: pg::StringInfo,
 ) {
-    let bytes: &[u8] = from_raw_parts(
-        message as *const u8, // c_char, i8, u8 -- I guess it's all the same...
+    let data = OutputBytesInMostFriendlyWay(
+        message as *const u8,
         message_size as usize,
     );
-    let decoded = String::from_utf8_lossy(bytes);
 
     out.add_str("{ ");
 
@@ -331,7 +372,7 @@ unsafe fn append_message(
 
     out.add_json("message");
     out.add_str(": ");
-    out.add_json(decoded.deref());
+    out.add_json(data);
     out.add_str(", ");
 
     out.add_json("transactional");
