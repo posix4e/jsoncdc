@@ -23,16 +23,18 @@ endif
 
 
 # Note that `MODULES = jsoncdc` implies a dependency on `jsoncdc.so`.
-MODULES      = jsoncdc
+MODULES     := jsoncdc
 PGXX        := $(shell util/get_version)
 HAZRUST     := $(shell which cargo >/dev/null && echo yes || echo no)
 
 ifeq ($(shell uname -s),Darwin)
-LINK_FLAGS   = -C link-args='-Wl,-undefined,dynamic_lookup'
+LINK_FLAGS  := -C link-args='-Wl,-undefined,dynamic_lookup'
 endif
 
 ifeq ($(PG96),yes)
-FEATURES     = --features pg-ldc-messages
+FEATURES    := --features pg-ldc-messages
+else
+REGRESS     := $(subst message,,$(REGRESS))
 endif
 
 ifeq ($(HAZRUST),yes)
