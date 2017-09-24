@@ -1,12 +1,16 @@
 use std::ffi::{CStr, CString};
 use std::fmt;
 use std::mem::size_of;
+#[cfg(feature = "pg-ldc-messages")]
 use std::ops::Deref;
+#[cfg(feature = "pg-ldc-messages")]
 use std::slice::from_raw_parts;
 
+#[cfg(feature = "pg-ldc-messages")]
 extern crate base64;
 extern crate libc;
 extern crate rpgffi as pg;
+#[cfg(feature = "pg-ldc-messages")]
 extern crate serde_json;
 
 
@@ -25,7 +29,10 @@ pub unsafe extern "C" fn init(cb: *mut pg::OutputPluginCallbacks) {
     (*cb).change_cb = Some(change);
     (*cb).commit_cb = Some(commit);
     (*cb).shutdown_cb = Some(shutdown);
-    (*cb).message_cb = Some(message);
+    #[cfg(feature = "pg-ldc-messages")]
+    {
+        (*cb).message_cb = Some(message);
+    }
 }
 
 unsafe extern "C" fn startup(
@@ -88,6 +95,7 @@ unsafe extern "C" fn shutdown(ctx: *mut pg::Struct_LogicalDecodingContext) {
     pg::pfree((*ctx).output_plugin_private);
 }
 
+#[cfg(feature = "pg-ldc-messages")]
 unsafe extern "C" fn message(
     ctx: *mut pg::Struct_LogicalDecodingContext,
     _txn: *mut pg::ReorderBufferTXN,
@@ -128,8 +136,10 @@ impl PGAppend<*const i8> for pg::StringInfo {
     unsafe fn add_json(self, t: *const i8) { pg::escape_json(self, t); }
 }
 
+#[cfg(feature = "pg-ldc-messages")]
 struct OutputBytesInMostFriendlyWay(*const u8, usize);
 
+#[cfg(feature = "pg-ldc-messages")]
 impl PGAppend<OutputBytesInMostFriendlyWay> for pg::StringInfo {
     unsafe fn add_str(self, t: OutputBytesInMostFriendlyWay) {
         let bytes: &[u8] = from_raw_parts(t.0, t.1);
@@ -351,6 +361,7 @@ unsafe fn append_schema(relation: pg::Relation, out: pg::StringInfo) {
     out.add_str(" }");
 }
 
+#[cfg(feature = "pg-ldc-messages")]
 unsafe fn append_message(
     transactional: pg::_bool,
     prefix: *const std::os::raw::c_char,
