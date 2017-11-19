@@ -1,4 +1,6 @@
-FROM postgres:10.1
+ARG PG_VERSION
+
+FROM postgres:${PG_VERSION}
 
 ENV CARGO_HOME /cargo
 ENV PATH $CARGO_HOME/bin:$PATH
