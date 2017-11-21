@@ -211,7 +211,7 @@ unsafe fn append_change(
     let ns = pg::get_namespace_name(pg::get_rel_namespace(relid));
     let qualified_name = pg::quote_qualified_identifier(ns, name);
     let tuple_desc = (*relation).rd_att;
-    let tuples = (*change).data.tp;
+    let tuples = (*change).data.tp.as_ref();
     let tuple_new = tuples.newtuple;
     let tuple_old = tuples.oldtuple;
     let token = match (*change).action {
