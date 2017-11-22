@@ -40,7 +40,7 @@ endif
 ifeq ($(HAZRUST),yes)
 .PHONY: jsoncdc.so
 jsoncdc.so: base := target/release
-jsoncdc.so: lib := $(wildcard $(base)/libjsoncdc.so $(base)/libjsoncdc.dylib)
+jsoncdc.so: lib = $(wildcard $(base)/libjsoncdc.so $(base)/libjsoncdc.dylib)
 jsoncdc.so:
 	cargo rustc $(FEATURES) --release -- $(LINK_FLAGS)
 	cp $(lib) $@
