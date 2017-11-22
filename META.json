@@ -16,7 +16,7 @@
             "abstract": "Translates Postgres WAL to JSON",
             "file": "sql/jsoncdc.sql",
             "docfile": "doc/jsoncdc.md",
-            "version": "0.0.11"
+            "version": "0.0.12"
         }
     },
     "release_status": "unstable",
