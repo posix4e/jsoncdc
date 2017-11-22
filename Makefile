@@ -41,7 +41,7 @@ ifeq ($(HAZRUST),yes)
 .PHONY: jsoncdc.so
 jsoncdc.so:
 	cargo rustc $(FEATURES) --release -- $(LINK_FLAGS)
-	cp target/release/libjsoncdc.*so $@
+	cp target/release/libjsoncdc.*[so\|dll] $@
 
 .PHONY: cargoclean
 cargoclean:
