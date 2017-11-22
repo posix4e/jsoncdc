@@ -38,11 +38,14 @@ REGRESS     := $(subst message,,$(REGRESS))
 endif
 
 ifeq ($(HAZRUST),yes)
+.PHONY: cargo
+cargo:
+	cargo rustc $(FEATURES) --release -- $(LINK_FLAGS)
+
 .PHONY: jsoncdc.so
 jsoncdc.so: base := target/release
 jsoncdc.so: lib = $(wildcard $(base)/libjsoncdc.so $(base)/libjsoncdc.dylib)
-jsoncdc.so:
-	cargo rustc $(FEATURES) --release -- $(LINK_FLAGS)
+jsoncdc.so: cargo
 	cp $(lib) $@
 
 .PHONY: cargoclean
