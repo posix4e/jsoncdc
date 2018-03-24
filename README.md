@@ -1,3 +1,14 @@
+**Please Note:**
+
+JSONCDC is now maintained at, and released to [PGXN] from:
+
+https://github.com/instructure/jsoncdc
+
+Pull requests and issues, and feature requests and new ideas, should
+be filed there henceforth.
+
+[PGXN]: https://pgxn.org/dist/jsoncdc/
+
 JSONCDC
 =======
 
